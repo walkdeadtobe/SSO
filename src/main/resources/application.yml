@@ -1,0 +1,24 @@
+spring:
+    datasource:
+        hikari:
+            connection-test-query: SELECT 1 FROM DUAL
+            minimum-idle: 1
+            maximum-pool-size: 5
+        driver-class-name: com.mysql.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/oauth?useUnicode=true&characterEncoding=gbk&serverTimezone=UTC&autoReconnect=true&useSSL=false
+        username: root
+        password: Qwer!@#4
+        initialization-mode: always
+    jpa:
+      hibernate:
+        ddl-auto: none
+# --- server
+server:
+  port: 8080
+  address: 0.0.0.0
+security:
+  oauth2:
+    authorization:
+      check-token-access: true
+
+#http://localhost:8080/oauth/authorize?client_id=test&redirect_uri=http://111.203.146.56/oauth/code&response_type=code&scope=read

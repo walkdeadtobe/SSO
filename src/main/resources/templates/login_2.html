@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.login_1.html.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>OAuth Server Login</title>
+    <link rel="stylesheet" href="webjars/bootstrap/3.3.2/css/bootstrap.min.css"/>
+
+
+
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    ::-webkit-scrollbar {
+        display: none;
+    }
+    body {
+        background: #001A33;
+
+    }
+    .login {
+        width: 100%;
+        height: 100%;
+    }
+    .logo {
+        display: flex;
+        width: 48%;
+        margin: 100px auto;
+        height: 110px;
+        /*border: 1px solid #fff;*/
+    }
+    .logo img {
+        width: 60%;
+        height: 100%;
+    }
+    .logo div {
+        font-size: 73px;
+        font-family: 楷体;
+        height: 100%;
+        color: #fff;
+        line-height: 110px;
+        padding: 20px;
+        border-left: 1px solid;
+    }
+    .login-box {
+        width: 670px;
+        height: 625px;
+        border-radius: 8px;
+        position: fixed;
+        top: 30%;
+        right: 210px;
+    }
+    .lg-title {
+        font-size: 38px;
+        color: #fff;
+    }
+    .lg-con {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        /*width: 100%;*/
+        height: 80%;
+    }
+    .lg-ipt {
+        display: flex;
+        align-items: center;
+    }
+    .lg-ipt input {
+        width: 90%;
+        height: 77px;
+        font-size: 38px;
+        font-family: 楷体;
+    }
+    .lg-dl {
+        width: 100%;
+        height: 77px;
+        line-height: 77px;
+        text-align: center;
+        background: #4ea1dc;
+        color: #fff;
+        letter-spacing: 10px;
+        font-size: 38px;
+        font-family: 楷体;
+    }
+    .lg-dl:hover {
+        cursor: pointer;
+        color: #108ee9;
+    }
+    .lg-cz {
+        display: flex;
+        justify-content: space-between;
+        height: 77px;
+        font-size: 24px;
+        color: #fff;
+    }
+    .lg-cz>p {
+        cursor: pointer;
+    }
+    .main {
+        margin: 0 auto;
+        padding-left: 25px;
+        padding-right: 25px;
+        padding-top: 15px;
+        width: 350px;
+        height: 350px;
+        background: #eee;
+        /*以下css用于让登录表单垂直居中在界面,可删除*/
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -175px;
+        margin-left: -175px;
+    }
+
+    .title {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+    }
+
+    .title span {
+        font-size: 18px;
+        color: #353f42;
+    }
+
+    .title-msg {
+        width: 100%;
+        height: 64px;
+        line-height: 64px;
+    }
+
+    .title:hover{
+        cursor: default	;
+    }
+
+    .title-msg:hover{
+        cursor: default	;
+    }
+
+    .title-msg span {
+        font-size: 12px;
+        color: #707472;
+    }
+
+    .input-content {
+        width: 100%;
+        height: 120px;
+    }
+
+    .input-content input {
+        width: 330px;
+        height: 40px;
+        border: 1px solid #dad9d6;
+        background: #ffffff;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .enter-btn {
+        width: 350px;
+        height: 40px;
+        color: #fff;
+        background: #0bc5de;
+        line-height: 40px;
+        text-align: center;
+        border: 0px;
+    }
+
+    .foor{
+        width: 100%;
+        height: auto;
+        color: #9b9c98;
+        font-size: 12px;
+        margin-top: 20px;
+    }
+
+    .enter-btn:hover {
+        cursor:pointer;
+        background: #1db5c9;
+    }
+
+    .foor div:hover {
+        cursor:pointer;
+        color: #484847;
+        font-weight: 600;
+    }
+
+    .left{
+        float: left;
+    }
+    .right{
+        float: right;
+    }
+
+</style>
+<body>
+<div layout:fragment="content" th:remove="tag">
+    <div id="login">
+        <div class="login">
+            <div class="logo">
+                <img src="" alt="logo">
+                <div>智慧科协</div>
+            </div>
+            <div class="login-box">
+                <div class="main">
+                    <div class="lg-title">
+                        密码登录
+                    </div>
+
+                    <div class="title-msg">
+                        <span>请输入登录账户和密码</span>
+                    </div>
+
+                    <form class="login-form" method="post"  action="login.do" >
+                        <!--输入框-->
+                        <div class="input-content">
+                            <!--autoFocus-->
+                            <div>
+                                <input class="form-control"  type="text" id="username" autocomplete="off"
+                                       placeholder="用户名" name="username" required/>
+                            </div>
+
+                            <div style="margin-top: 16px">
+                                <input class="form-control"  type="password"
+                                       autocomplete="off"  id=="password" placeholder="密码" name="password" required maxlength="32"/>
+                            </div>
+                        </div>
+
+                        <!--登入按钮-->
+                        <div style="text-align: center">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="submit"
+                                   name="login-submit"
+                                   id="login-submit"  class="enter-btn" >登录</button>
+                        </div>
+
+                        <div class="foor">
+                            <div class="left"><span>忘记密码 ?</span></div>
+
+                            <div class="right"><span>注册</span></div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
