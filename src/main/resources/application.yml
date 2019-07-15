@@ -14,7 +14,7 @@ spring:
         ddl-auto: none
 # --- server
 server:
-  port: 8080
+  port: 80
   address: 0.0.0.0
 security:
   oauth2:
@@ -22,3 +22,4 @@ security:
       check-token-access: true
 
 #http://localhost:8080/oauth/authorize?client_id=test&redirect_uri=http://111.203.146.56/oauth/code&response_type=code&scope=read
+#http://localhost:8080/oauth/authorize?client_id=test&redirect_uri=http://127.0.0.1/oauth/code&response_type=code&scope=read

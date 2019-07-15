@@ -34,10 +34,10 @@ public class AuthorizationServerApplication {
 	}
 
 	public static void main(String[] args) {
-		//getbcryt();
+		getbcryt();
 		SpringApplication.run(AuthorizationServerApplication.class, args);
 	}
-	public static void getbcryt(){
+	public static void filereader(){
 		BCryptPasswordEncoder passwordEncoder=new BCryptPasswordEncoder();
 		/*String back = passwordEncoder.encode("root");
 		log.info(back);
@@ -86,5 +86,19 @@ public class AuthorizationServerApplication {
 			e.printStackTrace();
 		}
 
+	}
+	public static void getbcryt() {
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		/*String back = passwordEncoder.encode("root");
+		log.info(back);
+		back = passwordEncoder.encode("normal");
+		log.info(back);
+
+	    back = passwordEncoder.encode("zhiku");
+		log.info(back);
+		back = passwordEncoder.encode("normal");
+		log.info(back);*/
+		String back = passwordEncoder.encode("test");
+		log.info(back);
 	}
 }

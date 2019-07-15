@@ -24,6 +24,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -37,6 +38,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Enumeration;
+
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices;
 
@@ -88,24 +92,24 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
         log.info("登录成功");
         SavedRequest savedrequest = requestCache.getRequest(request,response);
         log.info("-----------before MyAuthenticationSuccessHandle----------");
-        log.info("request:"+request.toString());
+        //log.info("request:"+request.toString());
         log.info("response:"+response.toString());
 
-        if(savedrequest == null){
+        //log.info(response.getHeaderNames().toString());
+        //log.info(authentication.getName());
 
-        }
 
         response.setContentType("application/json;charset=UTF-8");
-        String redirect_url = request.getParameter("redirect_url");
-        log.info("redirect_url:"+redirect_url);
+        //String redirect_uri = request.getParameter("redirect_uri");
+        //log.info("redirect_uri:"+redirect_uri);
         //response.sendRedirect(authUrl);
         //response.getWriter().write(objectMapper.writeValueAsString(authentication));//将java对象转成json字符串写入response，Authtication参数中包含我们的认证信息
-        response.setStatus(HttpStatus.OK.value());
+       // response.setStatus(301);
         JsonNodeFactory factory = JsonNodeFactory.instance;
         ObjectNode objectNode = factory.objectNode();
         objectNode.set("status", factory.textNode("success"));
 
-        //更新token
+        //token
         String token=createToken(authentication);
         //user.setUserName(request.getParameter("username"));
         //user.setPassword(request.getParameter("password"));
@@ -131,17 +135,43 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
         }
 */
         objectNode.set("token", factory.textNode(token));
-        PrintWriter out = response.getWriter();
-        out.write(objectNode.toString());
+        //PrintWriter out = response.getWriter();
+        //out.write(objectNode.toString());
         response.setHeader("token",token);
         response.setHeader("ApiKey",token);
 
-        out.write(tokenUtil.objectMapper.writeValueAsString(token));
-        response.sendRedirect("http://210.14.118.96/");
-        out.close();
+        //out.write(tokenUtil.objectMapper.writeValueAsString(token));
+
+        //response.sendRedirect("http://smart.cast.org.cn/");
+        //直接设置跳转时，会导致 在使用:http://localhost:8080/oauth/authorize?client_id=test&redirect_uri=http://127.0.0.1/oauth/code&response_type=code&scope=read
+        //时，不走redirect_uri=http://127.0.0.1/oauth/code的流程，而直接重定向
+        //改为
+        if(savedrequest!=null) {
+            String before_url = savedrequest.getRedirectUrl();//获取当前请求之前的请求url
+            log.info("redurecturl:" + before_url);
+            if (!before_url.contains("redirect_uri"))//说明之前的请求是直接打开登录页,而不是authorize，所以跳转到默认页
+            {
+                response.sendRedirect("http://smart.cast.org.cn/");
+                return ;
+            }
+            //登录处理流程：https://www.cnblogs.com/xifengxiaoma/p/10043173.html
+            SavedRequestAwareAuthenticationSuccessHandler s=new SavedRequestAwareAuthenticationSuccessHandler();
+            s.onAuthenticationSuccess(request,response,authentication);
+        }
+        else
+        {
+            log.info("savedrequest=null)");
+            response.sendRedirect("http://smart.cast.org.cn/");
+            //SavedRequestAwareAuthenticationSuccessHandler.
+
+            return;
+        }
+
+        //out.close();
         log.info("-----------after MyAuthenticationSuccessHandle----------");
         //log.info("request:"+request.toString());
         log.info("response:"+response.toString());
+        //onAuthenticationSuccess(request,response,authentication);
 
     }
 

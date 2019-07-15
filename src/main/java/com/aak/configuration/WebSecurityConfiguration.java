@@ -42,14 +42,15 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                .antMatchers("/login","/logout.do","/oauth/getAuth").permitAll()
+                .antMatchers("/login","/logout.do","/oauth/getAuth","/oauth/revoke_token").permitAll()
                 .antMatchers("/**").authenticated()
                 .and()
                 .formLogin()
                 .loginProcessingUrl("/login.do")
                 .usernameParameter("username")
                 .passwordParameter("password")
-                //.successHandler(new MyAuthenticationSuccessHandle())
+                //.defaultSuccessUrl("http://smart.cast.org.cn/")
+                .successHandler(new MyAuthenticationSuccessHandle())
                 .loginPage("/login")
                 .and()
                 .logout()
@@ -57,7 +58,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .userDetailsService(userDetailsServiceBean());
         http
-                .cors().and().csrf().disable();
+                .cors();//.and().csrf().disable();
     }
 
     @Override
