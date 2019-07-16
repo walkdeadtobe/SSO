@@ -1,4 +1,4 @@
-/*drop table if exists oauth_client_token;
+drop table if exists oauth_client_token;
 create table if not exists oauth_client_token (
   token_id VARCHAR(255),
   token LONGBLOB,
@@ -6,6 +6,7 @@ create table if not exists oauth_client_token (
   user_name VARCHAR(255),
   client_id VARCHAR(255)
 );
+/*
 drop table if exists oauth_client_details;
 CREATE TABLE if not exists oauth_client_details (
   client_id varchar(255) NOT NULL,
@@ -20,6 +21,8 @@ CREATE TABLE if not exists oauth_client_details (
   additional_information varchar(255) DEFAULT NULL,
   autoapprove varchar(255) DEFAULT NULL
 );
+*/
+
 drop table if exists oauth_access_token;
 create table if not exists oauth_access_token (
   token_id VARCHAR(255),
@@ -30,13 +33,13 @@ create table if not exists oauth_access_token (
   authentication LONGBLOB,
   refresh_token VARCHAR(255)
 );
-/*drop table if exists oauth_refresh_token;
+drop table if exists oauth_refresh_token;
 create table if not exists  oauth_refresh_token(
   token_id VARCHAR(255),
   token LONGBLOB,
   authentication LONGBLOB
 );
-drop table if exists authority;
+/*drop table if exists authority;
 CREATE TABLE if not exists authority (
   id  integer,
   authority varchar(255),
@@ -57,7 +60,7 @@ drop table if exists credentials_authorities;
 CREATE TABLE if not exists credentials_authorities (
   credentials_id bigint not null,
   authorities_id bigint not null
-);
+);*/
 drop table if exists oauth_code;
 create table if not exists oauth_code (
   code VARCHAR(255), authentication LONG VARBINARY
@@ -71,6 +74,7 @@ create table if not exists oauth_approvals (
     expiresAt DATETIME,
     lastModifiedAt DATETIME
 );
+/*
 
 INSERT INTO authority  VALUES(1,'ROLE_ADMIN');
 INSERT INTO authority VALUES(2,'ROLE_RESOURCE_ADMIN');
