@@ -109,11 +109,7 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
         ObjectNode objectNode = factory.objectNode();
         objectNode.set("status", factory.textNode("success"));
 
-        //token
-        String token=createToken(authentication);
-        //user.setUserName(request.getParameter("username"));
-        //user.setPassword(request.getParameter("password"));
-        log.info("username:"+request.getParameter("username"));
+
         /*try {
 
             //user=userServiceimpl.findUserByUserName(request.getParameter("username"));
@@ -134,11 +130,18 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
             return ;
         }
 */
+        /*
+        //token
+        String token=createToken(authentication);
+        //user.setUserName(request.getParameter("username"));
+        //user.setPassword(request.getParameter("password"));
+        log.info("username:"+request.getParameter("username"));
         objectNode.set("token", factory.textNode(token));
         //PrintWriter out = response.getWriter();
         //out.write(objectNode.toString());
         response.setHeader("token",token);
         response.setHeader("ApiKey",token);
+         */
 
         //out.write(tokenUtil.objectMapper.writeValueAsString(token));
 

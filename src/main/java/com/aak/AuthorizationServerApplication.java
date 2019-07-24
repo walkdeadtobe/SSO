@@ -26,12 +26,13 @@ public class AuthorizationServerApplication {
 
 	public static Log log= LogFactory.getLog(AuthorizationServerApplication.class);
 
-	@Bean
+	/*@Bean
 	@Primary
 	@ConfigurationProperties(prefix = "spring.datasource")
 	public DataSource mainDataSource() {
 		return DataSourceBuilder.create().type(HikariDataSource.class).build();
 	}
+	 */
 
 	public static void main(String[] args) {
 		getbcryt();

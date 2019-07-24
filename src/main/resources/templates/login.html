@@ -240,7 +240,9 @@
             <div class="login-box">
                 <div class="main">
                     <div class="lg-title">
-                        统一登录入口
+                       <!--统一登录入口-->
+                        <p id="to"  align="center">统一登录入口</p>
+
                     </div>
                     <!--action="login.do"-->
                     <form class="login-form" method="post"   action="login.do">
@@ -292,7 +294,52 @@
 
 </div>
 </body>
-<script>
+<script th:inline="javascript">
+    var s_from = [[${from}]];
+    var mess=[[${redirect1}]];
+
+    if(s_from!=null&&s_from!="all")
+        document.cookie="from="+s_from;
+    var back=getCookie("from");
+    if(back==null || back==""){
+        console.log("from=null");
+    }else{
+        if(s_from!=null){
+            if(back=="talent"){
+                document.getElementById("to").innerText="即将登陆人才库";
+            }else if (back=="kexie"){
+                document.getElementById("to").innerText="即将登陆智慧科协"
+            }else{
+                document.getElementById("to").innerText="统一登录入口"
+            }
+        }
+
+    }
+    //console.log(message);
+    function getCookie(c_name) {
+        if (document.cookie.length > 0) {
+            console.log(document.cookie)
+
+            c_start = document.cookie.indexOf(c_name + "=")
+            if (c_start != -1) {
+                c_start = c_start + c_name.length + 1
+                c_end = document.cookie.indexOf(";", c_start)
+                if (c_end == -1) c_end = document.cookie.length
+                return unescape(document.cookie.substring(c_start, c_end))
+            }
+        }
+        return ""
+    }
+    function setCookie(c_name, value, expiredays) {
+        var exdate = new Date()
+        console.log(c_name, value, expiredays)
+        exdate.setDate(exdate.getDate() + expiredays)
+        document.cookie = c_name + "=" + escape(value) +
+            ((expiredays == null) ? "" : ";expires=" + exdate.toGMTString())
+    }
+
+    //var message = "[[${url}]]";
+    //console.log(message);
    //onsole.log(window.localStorage.getItem('token'))
     // window.location.href = 'http://111.203.146.56'
     // function login() {

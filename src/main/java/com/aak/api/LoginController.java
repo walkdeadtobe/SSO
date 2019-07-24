@@ -1,6 +1,13 @@
 package com.aak.api;
 
+import com.aak.configuration.MyApplication;
+import com.aak.configuration.ServerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.approval.Approval;
@@ -8,12 +15,16 @@ import org.springframework.security.oauth2.provider.approval.ApprovalStore;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
@@ -30,25 +41,36 @@ public class LoginController {
 
     @Autowired
     private ApprovalStore approvalStore;
+
+    @Autowired
+    private MyApplication myApplication ;
+
+    private Logger log = LoggerFactory.getLogger(getClass());
     /*@RequestMapping(value = "/*",method = RequestMethod.OPTIONS)
     public ResponseEntity handleOptions(){
         return ResponseEntity.noContent().header("Access-Control-Allow-Origin","http://111.203.146.56:8080")
                 .allow(HttpMethod.GET,HttpMethod.POST,HttpMethod.PUT).build();
     }*/
     @RequestMapping("/")
-    public ModelAndView root(Map<String,Object> model, Principal principal){
+    public ModelAndView root(Map<String,Object> model, Principal principal,HttpServletRequest request,HttpServletResponse response){
 
-
-        List<Approval> approvals=clientDetailsService.listClientDetails().stream()
+       /* List<Approval> approvals=clientDetailsService.listClientDetails().stream()
                 .map(clientDetails -> approvalStore.getApprovals(principal.getName(),clientDetails.getClientId()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
+       */
 
-
-        model.put("approvals",approvals);
-        model.put("clientDetails",clientDetailsService.listClientDetails());
+        if(request.getQueryString()!=null&&request.getQueryString().equals("logout")) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null) {
+                new SecurityContextLogoutHandler().logout(request, response, auth);
+            }
+            return new ModelAndView("redirect:/login?logout",model);
+        }
+        //model.put("approvals",approvals);
+        //model.put("clientDetails",clientDetailsService.listClientDetails());
         return new ModelAndView ("index",model);
-
+        //return "index";
     }
 
     @Autowired
@@ -64,8 +86,80 @@ public class LoginController {
     }
 
     @RequestMapping("/login")
-    public String loginPage() {
-        return "login";
+    public ModelAndView loginPage(HttpServletRequest request, HttpServletResponse response) {
+        RequestCache requestCache= new HttpSessionRequestCache();
+        SavedRequest savedrequest = requestCache.getRequest(request,response);
+        ModelAndView model = new ModelAndView("login");
+        //log.info(request.getCookies());
+
+
+        if(savedrequest!=null){
+            log.info("aaa");
+            if(savedrequest.getRedirectUrl()!=null){
+                log.info("bbb");
+                //log.info(savedrequest.getRedirectUrl());
+                String url=savedrequest.getRedirectUrl();
+                //url.matches("http://(\d{1,3}.){3}\d{1,3}(/api/(dxs|dkp|dzk|ddj|kj|kejie|qichuang|talent|zhiku)")
+                //if(url.split("redirect_uri"))
+                if(savedrequest.getRedirectUrl().contains("/cookie.html")){
+                    model.addObject("from", "kexie");
+                }else if(savedrequest.getRedirectUrl().contains("/cookie_talent.html")) {
+                    model.addObject("from", "talent");
+                }else{
+                    model.addObject("from", "all");
+                }
+            }else{
+                log.info("ccc");
+                Cookie[] c=request.getCookies();
+                for(int i=0;i<c.length;i++)
+                {
+                 if(c[i].getName().equals("from")){
+                     String port=myApplication.getPort();
+                     log.info("port:"+port);
+                     if(c[i].getValue().equals("talent")){
+                         if(port.equals("80"))
+                            return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read");
+                         else
+                             return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=http://smart.cast.org.cn/talent/cookie_talent.html&response_type=code&scope=read");
+                     }else if(c[i].getValue().equals("kexie")){
+                         if(port.equals("80"))
+                             return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read");
+                         else
+                             return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=http://smart.cast.org.cn/talent/cookie.html&response_type=code&scope=read");
+                     }else{
+                         //
+                     }
+                 }
+                }
+                //log.info("null");
+                model.addObject("from", "all");
+            }
+
+
+        }else{
+            log.info("sss");
+            Cookie[] c=request.getCookies();
+            for(int i=0;i<c.length;i++)
+            {
+                log.info(c[i].getName());
+                if(c[i].getName().equals("from")){
+                    log.info("port:"+myApplication.getPort());
+                    if(c[i].getValue().equals("talent")){
+                        return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read");
+                    }else if(c[i].getValue().equals("kexie")){
+                        return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read");
+                    }else{
+                        //
+                    }
+                }
+            }
+
+            //model.addObject("from", "all");
+        }
+
+        //log.info("redirect_url:"+savedrequest.getRedirectUrl());
+        return model;
+        //return "login";
     }
 
 

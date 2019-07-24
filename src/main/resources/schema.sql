@@ -39,7 +39,8 @@ create table if not exists  oauth_refresh_token(
   token LONGBLOB,
   authentication LONGBLOB
 );
-/*drop table if exists authority;
+/*
+drop table if exists authority;
 CREATE TABLE if not exists authority (
   id  integer,
   authority varchar(255),
@@ -60,7 +61,8 @@ drop table if exists credentials_authorities;
 CREATE TABLE if not exists credentials_authorities (
   credentials_id bigint not null,
   authorities_id bigint not null
-);*/
+);
+*/
 drop table if exists oauth_code;
 create table if not exists oauth_code (
   code VARCHAR(255), authentication LONG VARBINARY
@@ -75,7 +77,6 @@ create table if not exists oauth_approvals (
     lastModifiedAt DATETIME
 );
 /*
-
 INSERT INTO authority  VALUES(1,'ROLE_ADMIN');
 INSERT INTO authority VALUES(2,'ROLE_RESOURCE_ADMIN');
 INSERT INTO authority VALUES(3,'ROLE_PRODUCT_ADMIN');
@@ -624,6 +625,14 @@ INSERT INTO credentials  VALUES(539,b'1','S31_normal','$2a$10$0zEJMzmylg7s9IyWMM
 INSERT INTO credentials  VALUES(540,b'1','S32_admin','$2a$10$ggcuzaB4Qgrwl7tctVvRCeJLXA.zD/0DVXsMu1he6lY/cHfYcQnLm','DEPART','0');
 INSERT INTO credentials  VALUES(541,b'1','S32_normal','$2a$10$wNzE4cFb0BEkTbrhr0YDRucvywFSAIg90twSLt2qditWxmQPwKM.e','DEPART','0');
 INSERT INTO credentials  VALUES(542,b'1','test','$2a$10$Rfh93hckGzL.8gG8oT1CfODwxNurJ8OHqpPcvtUNQGsG0IGeSBmIq','DEPART','0');
+INSERT INTO credentials  VALUES(543,b'1','S06_admin_dalian','$2a$10$D25lGkhUBZzqlWEkDqqriemxNMcVPgyWMrNvUOqi/yNLZ6NVFi.pa','DEPART','0');
+INSERT INTO credentials  VALUES(544,b'1','S06_normal_dalian','$2a$10$JasFEy2tBkkVgB.JBaf3e.jJ9OBNwhl8x7sbDis7KgMa2qzvSLzOK','DEPART','0');
+INSERT INTO credentials  VALUES(545,b'1','S06_admin_shenyang','$2a$10$D25lGkhUBZzqlWEkDqqriemxNMcVPgyWMrNvUOqi/yNLZ6NVFi.pa','DEPART','0');
+INSERT INTO credentials  VALUES(546,b'1','S06_normal_shenyang','$2a$10$JasFEy2tBkkVgB.JBaf3e.jJ9OBNwhl8x7sbDis7KgMa2qzvSLzOK','DEPART','0');
+INSERT INTO credentials  VALUES(547,b'1','S23_admin_chengdu','$2a$10$BYvjgGvMzVWbZCBHPKokputQU/YG5aGDTNRPirrIBnGI4s8NdY5Q.','DEPART','0');
+INSERT INTO credentials  VALUES(548,b'1','S23_normal_chengdu','$2a$10$npwSZLNxbE1lbf7awHE63u/72kDtq5okMVmFhZSh4Y/RZS4Il1Vu2','DEPART','0');
+
+
 INSERT INTO credentials_authorities VALUE (1,1);
 INSERT INTO credentials_authorities VALUE (2,2);
 INSERT INTO credentials_authorities VALUE (3,3);
@@ -1166,7 +1175,12 @@ INSERT INTO credentials_authorities VALUE (539,6);
 INSERT INTO credentials_authorities VALUE (540,6);
 INSERT INTO credentials_authorities VALUE (541,6);
 INSERT INTO credentials_authorities VALUE (542,6);
-
+INSERT INTO credentials_authorities VALUE (543,6);
+INSERT INTO credentials_authorities VALUE (544,6);
+INSERT INTO credentials_authorities VALUE (545,6);
+INSERT INTO credentials_authorities VALUE (546,6);
+INSERT INTO credentials_authorities VALUE (547,6);
+INSERT INTO credentials_authorities VALUE (548,6);
 
 INSERT INTO oauth_client_details VALUES('curl_client','product_api', '$2a$10$BurTWIy5NTF9GJJH4magz.9Bd4bBurWYG8tmXxeQh1vs7r/wnCFG2', 'read,write', 'client_credentials', 'http://127.0.0.1', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
 INSERT INTO oauth_client_details VALUES('root','public,secret', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'client_credentials', 'http://127.0.0.1', 'ROLE_TALENT_ADMIN', 7200, 0, NULL, 'true');
