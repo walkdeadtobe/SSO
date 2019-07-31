@@ -1,20 +1,27 @@
 spring:
-    datasource:
-        hikari:
-            connection-test-query: SELECT 1 FROM DUAL
-            minimum-idle: 1
-            maximum-pool-size: 5
-        driver-class-name: com.mysql.jdbc.Driver
-        jdbc-url: jdbc:mysql://localhost:3306/oauth?useUnicode=true&characterEncoding=gbk&serverTimezone=UTC&autoReconnect=true&useSSL=false
-        username: root
-        password: Qwer!@#4
-        initialization-mode: always
-    jpa:
-      hibernate:
-        ddl-auto: none
+  datasource:
+    hikari:
+      connection-test-query: SELECT 1 FROM DUAL
+      minimum-idle: 1
+      maximum-pool-size: 30
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      idle-timeout: 30000
+    driver-class-name: com.mysql.jdbc.Driver
+    jdbc-url: jdbc:mysql://localhost:3306/oauth?useUnicode=true&characterEncoding=gbk&serverTimezone=UTC&autoReconnect=true&useSSL=false
+    username: root
+    password: Qwer!@#4
+    initialization-mode: always
+    time-between-eviction-runs-millis: 1880000
+    minEvictableIdleTimeMillis: 300000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
 # --- server
 server:
-  port: 80
+  port: 8080
   address: 0.0.0.0
 security:
   oauth2:

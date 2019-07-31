@@ -160,6 +160,7 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
             //登录处理流程：https://www.cnblogs.com/xifengxiaoma/p/10043173.html
             SavedRequestAwareAuthenticationSuccessHandler s=new SavedRequestAwareAuthenticationSuccessHandler();
             s.onAuthenticationSuccess(request,response,authentication);
+
         }
         else
         {
@@ -167,13 +168,14 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
             response.sendRedirect("http://smart.cast.org.cn/");
             //SavedRequestAwareAuthenticationSuccessHandler.
 
-            return;
+
         }
 
         //out.close();
         log.info("-----------after MyAuthenticationSuccessHandle----------");
+        log.info("-----------成功登陆----------");
         //log.info("request:"+request.toString());
-        log.info("response:"+response.toString());
+        //log.info("response:"+response.toString());
         //onAuthenticationSuccess(request,response,authentication);
 
     }
