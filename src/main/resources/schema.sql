@@ -1,4 +1,4 @@
-/* 11
+
 drop table if exists oauth_client_token;
 
 create table if not exists oauth_client_token (
@@ -8,7 +8,7 @@ create table if not exists oauth_client_token (
   user_name VARCHAR(255),
   client_id VARCHAR(255)
 );
-*/
+
 
 /*
 drop table if exists oauth_client_details;
@@ -27,7 +27,7 @@ CREATE TABLE if not exists oauth_client_details (
 );
 */
 
-/* 11
+
 drop table if exists oauth_access_token;
 create table if not exists oauth_access_token (
   token_id VARCHAR(255),
@@ -44,7 +44,7 @@ create table if not exists  oauth_refresh_token(
   token LONGBLOB,
   authentication LONGBLOB
 );
-*/
+
 /*
 drop table if exists authority;
 CREATE TABLE if not exists authority (
@@ -69,7 +69,7 @@ CREATE TABLE if not exists credentials_authorities (
   authorities_id bigint not null
 );
 */
-/* 11
+
 drop table if exists oauth_code;
 create table if not exists oauth_code (
   code VARCHAR(255), authentication LONG VARBINARY
@@ -83,7 +83,7 @@ create table if not exists oauth_approvals (
     expiresAt DATETIME,
     lastModifiedAt DATETIME
 );
- */
+
 
 /*
 INSERT INTO authority  VALUES(1,'ROLE_ADMIN');
