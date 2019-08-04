@@ -104,35 +104,21 @@ public class LoginController {
         //log.info(request.getCookies());
         //判断是否是从logout重定向而来
 
-        if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null) {
-            String uu=savedrequest.getRedirectUrl();
-            log.info("getRedirectUrl11:" + uu);
-            String[] back=uu.split("&");
-            if(back!=null){
-                for(int i=0;i<back.length;i++)
-                    if(back[i].contains("refer"))
-                        request.getSession().setAttribute("refer",back[i]);
-            }
-            if(savedrequest!=null) {
-                Collection<String> c = savedrequest.getHeaderNames();
-                Iterator<String> it = c.iterator();
-                log.info("header start");
-                while (it.hasNext()) {
-                    log.info(it.next());
-                }
-                log.info("header end");
-            }
 
-        }
-
-
-        if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=(talent|kexie)&redirect_uri=http://(210.14.118.96|smart.cast.org.cn)/(ep|talent)/(cookie_talent|cookie).html&response_type=code&scope=read")){
+        if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=(talent|kexie)&redirect_uri=/oauth/code\\?back_to=http://(210.14.118.96|smart.cast.org.cn)/(ep|talent)/(cookie_talent|cookie).html&response_type=code&scope=read&refer=http://(210.14.118.96|smart.cast.org.cn).{1,100}")){
                 log.info("bbb");
                 //log.info(savedrequest.getRedirectUrl());
                 String url=savedrequest.getRedirectUrl();
                 //url.matches("http://(\d{1,3}.){3}\d{1,3}(/api/(dxs|dkp|dzk|ddj|kj|kejie|qichuang|talent|zhiku)")
                 //if(url.split("redirect_uri"))
                 log.info("getRedirectUrl:"+url);
+                String[] back=url.split("&");
+                if(back!=null) {
+                    for (int i = 0; i < back.length; i++) {
+                        if (back[i].contains("refer="))
+                            request.getSession().setAttribute("refer", back[i].split("refer=")[1]);
+                    }
+                }
                 if(savedrequest.getRedirectUrl().contains("/cookie.html")){
                     model.addObject("from", "kexie");
                 }else if(savedrequest.getRedirectUrl().contains("/cookie_talent.html")) {
@@ -153,14 +139,14 @@ public class LoginController {
                             log.info("from:"+c[i].getValue());
                             if(c[i].getValue().equals("talent")){
                                 if(port.equals("80"))
-                                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read");
+                                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read");
                                 else
-                                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=http://smart.cast.org.cn/talent/cookie_talent.html&response_type=code&scope=read");
+                                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie_talent.html&response_type=code&scope=read");
                             }else if(c[i].getValue().equals("kexie")){
                                 if(port.equals("80"))
-                                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read");
+                                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read");
                                 else
-                                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=http://smart.cast.org.cn/talent/cookie.html&response_type=code&scope=read");
+                                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie.html&response_type=code&scope=read");
                             }else{
                                 //
                             }

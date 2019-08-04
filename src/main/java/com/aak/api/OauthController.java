@@ -103,7 +103,7 @@ public class OauthController {
             log.info("header end");
         }
         try {
-            response.sendRedirect(request.getParameter("from"));
+            response.sendRedirect(request.getParameter("back_to")+"?refer="+request.getSession().getAttribute("refer"));
         }catch (Exception e){
             System.out.println(e.toString());
         }
