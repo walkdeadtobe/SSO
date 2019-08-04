@@ -11,6 +11,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.Class;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 @RestController
@@ -79,6 +83,30 @@ public class OauthController {
         log.info(oAuth2Authentication.toString());
 
         return oAuth2Authentication;
+
+    }
+
+    @RequestMapping(value="/oauth/code",method= RequestMethod.GET)
+    static void  test(HttpServletRequest request, HttpServletResponse response){
+        RequestCache requestCache= new HttpSessionRequestCache();
+        Object s1 = request.getSession().getAttribute("refer");
+        if(s1!=null)
+            log.info("s1:"+s1.toString());
+        SavedRequest savedrequest = requestCache.getRequest(request,response);
+        if(savedrequest!=null) {
+            Collection<String> c = savedrequest.getHeaderNames();
+            Iterator<String> it = c.iterator();
+            log.info("header start");
+            while (it.hasNext()) {
+                log.info(it.next());
+            }
+            log.info("header end");
+        }
+        try {
+            response.sendRedirect(request.getParameter("from"));
+        }catch (Exception e){
+            System.out.println(e.toString());
+        }
 
     }
 

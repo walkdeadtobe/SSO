@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -103,7 +104,26 @@ public class LoginController {
         //log.info(request.getCookies());
         //判断是否是从logout重定向而来
 
+        if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null) {
+            String uu=savedrequest.getRedirectUrl();
+            log.info("getRedirectUrl11:" + uu);
+            String[] back=uu.split("&");
+            if(back!=null){
+                for(int i=0;i<back.length;i++)
+                    if(back[i].contains("refer"))
+                        request.getSession().setAttribute("refer",back[i]);
+            }
+            if(savedrequest!=null) {
+                Collection<String> c = savedrequest.getHeaderNames();
+                Iterator<String> it = c.iterator();
+                log.info("header start");
+                while (it.hasNext()) {
+                    log.info(it.next());
+                }
+                log.info("header end");
+            }
 
+        }
 
 
         if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=(talent|kexie)&redirect_uri=http://(210.14.118.96|smart.cast.org.cn)/(ep|talent)/(cookie_talent|cookie).html&response_type=code&scope=read")){
