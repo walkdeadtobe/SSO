@@ -88,6 +88,7 @@ public class OauthController {
 
     @RequestMapping(value="/oauth/code",method= RequestMethod.GET)
     static void  test(HttpServletRequest request, HttpServletResponse response){
+        log.info("in /oauth/code");
         RequestCache requestCache= new HttpSessionRequestCache();
         Object s1 = request.getSession().getAttribute("refer");
         if(s1!=null)
@@ -103,7 +104,7 @@ public class OauthController {
             log.info("header end");
         }
         try {
-            response.sendRedirect(request.getParameter("back_to")+"?refer="+request.getSession().getAttribute("refer"));
+            response.sendRedirect(request.getParameter("back_to")+"?code="+request.getParameter("code")+"&refer="+request.getSession().getAttribute("refer"));
         }catch (Exception e){
             System.out.println(e.toString());
         }

@@ -105,7 +105,8 @@ public class LoginController {
         //判断是否是从logout重定向而来
 
 
-        if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=(talent|kexie)&redirect_uri=/oauth/code\\?back_to=http://(210.14.118.96|smart.cast.org.cn)/(ep|talent)/(cookie_talent|cookie).html&response_type=code&scope=read&refer=http://(210.14.118.96|smart.cast.org.cn).{1,100}")){
+        //if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=(talent|kexie)&redirect_uri=/oauth/code\\?back_to=http://(210.14.118.96|smart.cast.org.cn)/(ep|talent)/(cookie_talent|cookie).html&response_type=code&scope=read&refer=http://(210.14.118.96|smart.cast.org.cn).{1,100}")){//http://(210.14.118.96|smart.cast.org.cn).{1,100}
+        if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=.{1,10}&redirect_uri=/oauth/code\\?back_to=.{1,100}&response_type=code&scope=read&refer=.{1,100}")){//http://(210.14.118.96|smart.cast.org.cn).{1,100}
                 log.info("bbb");
                 //log.info(savedrequest.getRedirectUrl());
                 String url=savedrequest.getRedirectUrl();
@@ -115,8 +116,11 @@ public class LoginController {
                 String[] back=url.split("&");
                 if(back!=null) {
                     for (int i = 0; i < back.length; i++) {
-                        if (back[i].contains("refer="))
+                        if (back[i].contains("refer=")) {
+
+                            log.info("back[i]:"+back[i]);
                             request.getSession().setAttribute("refer", back[i].split("refer=")[1]);
+                        }
                     }
                 }
                 if(savedrequest.getRedirectUrl().contains("/cookie.html")){
