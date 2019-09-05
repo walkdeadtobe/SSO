@@ -3,6 +3,7 @@ package com.aak.configuration;
 import com.aak.domain.*;
 import com.aak.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,8 +28,23 @@ public class JdbcUserDetails implements UserDetailsService{
     @Autowired
     private Credentials_AuthorityRepository credentials_authorityRepository;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    private String Max_Attempt="5";
+
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        String num_str=stringRedisTemplate.opsForValue().get(username);
+        if(num_str != null&&num_str.equals(Max_Attempt)){
+            log.info("num_str.equals(Max_Attempt)");
+            throw new UsernameNotFoundException("User  "+username+"can not be found because exceed");
+        }
+        if(stringRedisTemplate!=null)
+        {
+            log.info("stringRedisTemplate!=null");
+        }
         try {
             log.info("loadUserByUsername" + username);
             Credentials credentials = credentialRepository.findByName(username);
@@ -40,7 +56,6 @@ public class JdbcUserDetails implements UserDetailsService{
             log.info("authority.toString():" + authority.toString());
 
         if(credentials==null){
-
             throw new UsernameNotFoundException("User"+username+"can not be found");
         }
 

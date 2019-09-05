@@ -1,8 +1,11 @@
 package com.aak.configuration;
 
+import com.aak.user.MyAuthenticationFailureHandler;
 import com.aak.user.MyAuthenticationSuccessHandle;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -47,10 +50,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
                 .loginProcessingUrl("/login.do")
+                .failureForwardUrl("/login?error=true")
                 .usernameParameter("username")
                 .passwordParameter("password")
                 //.defaultSuccessUrl("http://smart.cast.org.cn/")
                 .successHandler(new MyAuthenticationSuccessHandle())
+                .failureHandler(new MyAuthenticationFailureHandler())
                 .loginPage("/login")
                 .and()
                 .logout()
@@ -59,6 +64,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .userDetailsService(userDetailsServiceBean());
         http
                 .cors();//.and().csrf().disable();
+
     }
 
     @Override

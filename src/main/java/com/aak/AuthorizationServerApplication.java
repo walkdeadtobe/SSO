@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +20,9 @@ import javax.sql.DataSource;
 import java.io.*;
 
 
+@ServletComponentScan
 @SpringBootApplication
+@EnableCaching
 @Configuration
 //@EnableAutoConfiguration
 //@ComponentScan
@@ -36,7 +40,7 @@ public class AuthorizationServerApplication {
 
 	public static void main(String[] args) {
 		getbcryt();
-		SpringApplication.run(AuthorizationServerApplication.class, args);
+		//SpringApplication.run(AuthorizationServerApplication.class, args);
 	}
 	public static void filereader(){
 		BCryptPasswordEncoder passwordEncoder=new BCryptPasswordEncoder();
@@ -90,16 +94,35 @@ public class AuthorizationServerApplication {
 	}
 	public static void getbcryt() {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		/*String back = passwordEncoder.encode("root");
+		/*String back="";
+		String print="";
+		int start=556;
+		//INSERT INTO credentials  VALUES(542,b'1','test','$2a$10$Rfh93hckGzL.8gG8oT1CfODwxNurJ8OHqpPcvtUNQGsG0IGeSBmIq','DEPART','0');
+		for(int i=1;i<=20;i++) {
+			back = passwordEncoder.encode("test" + i);
+			back="INSERT INTO credentials  VALUES("+(start+i)+",b'1','"+"test" + i+"','"+back+"','DEPART','0');";
+			print+=back+"\n";
+		}
+		log.info(print);
+		print="";
+		for(int i=1;i<=20;i++) {
+			back="INSERT INTO credentials_authorities VALUE ("+(start+i)+",6);";
+			print+=back+"\n";
+		}
+		log.info(print)；
+		 */
+		String back = passwordEncoder.encode("zrfcsovls");
 		log.info(back);
-		back = passwordEncoder.encode("normal");
+		back = passwordEncoder.encode("kaosfb9l");
 		log.info(back);
-
+/*
 	    back = passwordEncoder.encode("zhiku");
 		log.info(back);
 		back = passwordEncoder.encode("normal");
-		log.info(back);*/
-		String back = passwordEncoder.encode("test");
 		log.info(back);
+		String back = passwordEncoder.encode("inskygtj");
+		log.info(back);
+		back = passwordEncoder.encode("r3skyg9h");
+		log.info(back);*/
 	}
 }

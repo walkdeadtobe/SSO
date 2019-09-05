@@ -1,4 +1,9 @@
 spring:
+  redis:
+    #数据库索引
+    #database: 0
+    host: 127.0.0.1
+    port: 6379
   datasource:
     hikari:
       connection-test-query: SELECT 1 FROM DUAL
@@ -8,7 +13,7 @@ spring:
       connection-timeout: 30000
       idle-timeout: 30000
     driver-class-name: com.mysql.jdbc.Driver
-    jdbc-url: jdbc:mysql://localhost:3306/oauth?useUnicode=true&characterEncoding=gbk&serverTimezone=UTC&autoReconnect=true&useSSL=false
+    jdbc-url: jdbc:mysql://localhost:3306/oauth?useUnicode=true&characterEncoding=gbk&serverTimezone=UTC&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: Qwer!@#4
     initialization-mode: always
@@ -21,7 +26,7 @@ spring:
       ddl-auto: none
 # --- server
 server:
-  port: 8080
+  port: 80
   address: 0.0.0.0
 security:
   oauth2:
@@ -30,3 +35,5 @@ security:
 
 #http://localhost:8080/oauth/authorize?client_id=test&redirect_uri=http://111.203.146.56/oauth/code&response_type=code&scope=read
 #http://localhost:8080/oauth/authorize?client_id=test&redirect_uri=http://127.0.0.1/oauth/code&response_type=code&scope=read
+##http://localhost:8080/oauth/authorize?client_id=test1&redirect_uri=/oauth/code?back_to=http://127.0.0.1/oauth/code&response_type=code&scope=read&refer=test_refer
+#http://111.203.146.69/oauth/authorize?client_id=test_talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read&refer=http://210.14.118.96/

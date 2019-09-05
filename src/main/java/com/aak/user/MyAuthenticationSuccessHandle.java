@@ -17,6 +17,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.*;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices;
@@ -71,7 +73,11 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
     @Autowired
     private AuthorizationServerTokenServices authorizationServerTokenServices;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     public static MyAuthenticationSuccessHandle tokenUtil;
+
 
     public MyAuthenticationSuccessHandle(){
 
@@ -80,6 +86,7 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
     public void init() {
         tokenUtil = this;
         tokenUtil.jdbcClientDetailsService = this.jdbcClientDetailsService;
+        tokenUtil.stringRedisTemplate=this.stringRedisTemplate;
     }
 
 
@@ -90,6 +97,9 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
         log.info("登录成功");
+        //登陆成功后，删除错误登陆次数的统计
+        //if(request.getParameter("username")!=null) //当能够登录成功说明能登陆，即在 loadusernamepassword 那一部分没有拦截，即 key 已经过期
+        //   tokenUtil.stringRedisTemplate.delete(request.getParameter("username"));
         SavedRequest savedrequest = requestCache.getRequest(request,response);
         log.info("-----------before MyAuthenticationSuccessHandle----------");
         //log.info("request:"+request.toString());
@@ -157,6 +167,7 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
                 response.sendRedirect("http://smart.cast.org.cn/");
                 return ;
             }
+
             //登录处理流程：https://www.cnblogs.com/xifengxiaoma/p/10043173.html
             SavedRequestAwareAuthenticationSuccessHandler s=new SavedRequestAwareAuthenticationSuccessHandler();
             s.onAuthenticationSuccess(request,response,authentication);
@@ -172,8 +183,18 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
         }
 
         //out.close();
+        Collection<String> res_hea= response.getHeaderNames();
+        Iterator<String> it=res_hea.iterator();
+        log.info("-----------------start of  header ----------------");
+        while(it.hasNext()){
+            log.info(it.next());
+        }
+
+        log.info("------------------end of header---------------");
+        log.info(response.getHeader("Location"));
         log.info("-----------after MyAuthenticationSuccessHandle----------");
         log.info("-----------成功登陆----------");
+        return;
         //log.info("request:"+request.toString());
         //log.info("response:"+response.toString());
         //onAuthenticationSuccess(request,response,authentication);

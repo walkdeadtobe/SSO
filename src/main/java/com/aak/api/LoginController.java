@@ -101,12 +101,20 @@ public class LoginController {
         RequestCache requestCache= new HttpSessionRequestCache();
         SavedRequest savedrequest = requestCache.getRequest(request,response);
         ModelAndView model= new ModelAndView("login");
+
+
+        //对于 /login?error=true 页面 应该返回考虑可能返回的错误提示
+        if(request.getQueryString()!=null&&request.getQueryString().contains("error=true")&&request.getSession().getAttribute("error")!=null)
+        {
+            log.info(request.getQueryString());
+            model.addObject("error",request.getSession().getAttribute("error"));
+            request.getSession().removeAttribute("error");
+            return model;
+        }
         //log.info(request.getCookies());
         //判断是否是从logout重定向而来
-
-
-        //if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=(talent|kexie)&redirect_uri=/oauth/code\\?back_to=http://(210.14.118.96|smart.cast.org.cn)/(ep|talent)/(cookie_talent|cookie).html&response_type=code&scope=read&refer=http://(210.14.118.96|smart.cast.org.cn).{1,100}")){//http://(210.14.118.96|smart.cast.org.cn).{1,100}
-        if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=.{1,10}&redirect_uri=/oauth/code\\?back_to=.{1,100}&response_type=code&scope=read&refer=.{1,100}")){//http://(210.14.118.96|smart.cast.org.cn).{1,100}
+        if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=(talent|kexie)&redirect_uri=/oauth/code\\?back_to=http://(210.14.118.96|smart.cast.org.cn)/(ep|talent)/(cookie_talent|cookie).html&response_type=code&scope=read&refer=.{0,100}")){//http://(210.14.118.96|smart.cast.org.cn).{0,100}
+        //if(savedrequest!=null&&savedrequest.getRedirectUrl()!=null&&savedrequest.getRedirectUrl().matches(".{1,100}/oauth/authorize\\?client_id=.{1,10}&redirect_uri=/oauth/code\\?back_to=.{1,100}&response_type=code&scope=read&refer=.{1,100}")){//http://(210.14.118.96|smart.cast.org.cn).{1,100}
                 log.info("bbb");
                 //log.info(savedrequest.getRedirectUrl());
                 String url=savedrequest.getRedirectUrl();
@@ -114,12 +122,16 @@ public class LoginController {
                 //if(url.split("redirect_uri"))
                 log.info("getRedirectUrl:"+url);
                 String[] back=url.split("&");
+                String refer;
                 if(back!=null) {
                     for (int i = 0; i < back.length; i++) {
                         if (back[i].contains("refer=")) {
 
                             log.info("back[i]:"+back[i]);
-                            request.getSession().setAttribute("refer", back[i].split("refer=")[1]);
+                            refer=back[i].split("refer=")[1];
+                            if(refer==null ||refer.equals(""))
+                                refer="null";
+                            request.getSession().setAttribute("refer", refer);
                         }
                     }
                 }
@@ -143,14 +155,14 @@ public class LoginController {
                             log.info("from:"+c[i].getValue());
                             if(c[i].getValue().equals("talent")){
                                 if(port.equals("80"))
-                                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read");
+                                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read&refer=null");
                                 else
-                                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie_talent.html&response_type=code&scope=read");
+                                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie_talent.html&response_type=code&scope=read&refer=null");
                             }else if(c[i].getValue().equals("kexie")){
                                 if(port.equals("80"))
-                                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read");
+                                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read&refer=null");
                                 else
-                                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie.html&response_type=code&scope=read");
+                                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie.html&response_type=code&scope=read&refer=null");
                             }else{
                                 //
                             }
@@ -185,18 +197,19 @@ public class LoginController {
         {
             String port=myApplication.getPort();
             log.info(query);
+            //在登出后,再次在登陆界面输入账户名与密码,能够登陆到登出的系统
             if(query.contains("talent")){
                 //attributes.addFlashAttribute("logout_from","talent");
                 if(port.equals("80"))
-                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read");
+                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read&refer=null");
                 else
-                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=http://smart.cast.org.cn/talent/cookie_talent.html&response_type=code&scope=read");
+                    return new ModelAndView("redirect:/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie_talent.html&response_type=code&scope=read&refer=null");
             }else if(query.contains("kexie")){
                 //attributes.addFlashAttribute("logout_from","kexie");
                 if(port.equals("80"))
-                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read");
+                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read&refer=null");
                 else
-                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=http://smart.cast.org.cn/talent/cookie.html&response_type=code&scope=read");
+                    return new ModelAndView("redirect:/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie.html&response_type=code&scope=read&refer=null");
             }
         }
         return new ModelAndView("redirect:/login?logout");

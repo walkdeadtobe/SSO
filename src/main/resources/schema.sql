@@ -129,7 +129,7 @@ INSERT INTO credentials  VALUES(34,b'1','jg_zgkjg_admin','$2a$10$jhExx/r8bk932hi
 INSERT INTO credentials  VALUES(35,b'1','jg_zgkjg_normal','$2a$10$y4Y9fhDVNcN/C37mv/zVP.37Cn6W0Z/UJ/ABEuQoo.amNeg94O5nm','DEPART','0');
 INSERT INTO credentials  VALUES(36,b'1','jg_zgkxqsnkjzx_admin','$2a$10$AKVub8eYoBXFkS6BD39daeqr0YoYmDtz6vpM4.ucYagkZm8hlePKy','DEPART','0');
 INSERT INTO credentials  VALUES(37,b'1','jg_zgkxqsnkjzx_normal','$2a$10$gFyq/v.vTfcghnyZHLQSMu85iZ4YxzvA1mS6urgq7wFBLlkr/dQ8u','DEPART','0');
-INSERT INTO credentials  VALUES(38,b'1','jg_qycxfwzx_admin','$2a$10$qGps7dnKVqWBagDmz51PXecBji4okHGzpAFt9Z2lNIeUbigieL.Bi','DEPART','0');
+INSERT INTO credentials  VALUES(38,b'1','jg_qycxfwzx_admin','$2a$10$B36gUtT4HEcBtyKboBmGv.bt.IPW/W87AQlWW19EtUWrJDwxZm5a.','DEPART','0');
 INSERT INTO credentials  VALUES(39,b'1','jg_qqycxfwzx_normal','$2a$10$gecL8M25d2d1h5SRHlFrVe1qOR86pYFWmJ83aSXb6lSrzDtIeVlq.','DEPART','0');
 INSERT INTO credentials  VALUES(40,b'1','jg_zgkxnczyjsfwzx_admin','$2a$10$ru3cP7rCDgaJ.6xgS/Y0RuyHwYE6s7.4PgWpevL/46KP4/UYqOnKq','DEPART','0');
 INSERT INTO credentials  VALUES(41,b'1','jg_zgkxnczyjsfwzx_normal','$2a$10$IAP2TLtjK104gNQX.wjD0ekwpw8/buM3BwKy.jLxKGWkrPUfnOSv6','DEPART','0');
@@ -646,6 +646,31 @@ INSERT INTO credentials  VALUES(551,b'1','S24_admin_guiyang','$2a$10$PE/Br89mYs3
 INSERT INTO credentials  VALUES(552,b'1','S24_normal_guiyang','$2a$10$hE7slQ2P5wSmLkMR0icsUeU0JX11PSBNdGZJkDE/wXlPT.qY3rYDm','DEPART','0');
 INSERT INTO credentials  VALUES(553,b'1','S15_admin_ssxh','$2a$10$jT1C57a0g69yBaRSVrzOrOle7ntyQtWMtebPVxgAdl1k1e5TrfGBW','DEPART','0');
 INSERT INTO credentials  VALUES(554,b'1','S15_normal_ssxh','$2a$10$CFSCDtlf0QxzAS0cBfjlV.E9YhVAcB7QMBIXOpL9mikuMjN6EaMli','DEPART','0');
+INSERT INTO credentials  VALUES(555,b'1','S01_admin_skyg','$2a$10$WZMAXKMZFX.M93cL.6ZBNOls/nJIAQw2B6jQw11XuG/eWZQ8SXqBm','DEPART','0');
+INSERT INTO credentials  VALUES(556,b'1','S01_normal_skyg','$2a$10$ZvCFVVn7VA0QDEtjQ.EkFuhYpbNaYezbzDC3Sn7ugO9//j/ksmlfy','DEPART','0');
+INSERT INTO credentials  VALUES(557,b'1','test1','$2a$10$xg53jyZdFyJRndIjj.ne8.L3RDfnWyxWayJZzD4bVrEmVcALAxWlS','DEPART','0');
+INSERT INTO credentials  VALUES(558,b'1','test2','$2a$10$1hczHsbY4hFh4gtYyHeB8Od/XOy5VPq5ZdtKtX/IdLudPKtEwoQV.','DEPART','0');
+INSERT INTO credentials  VALUES(559,b'1','test3','$2a$10$RdG7YexJil8T4GLk0v8X4u82QA7TxGiiIpqlrxnMCVFJUC1Gp0xN2','DEPART','0');
+INSERT INTO credentials  VALUES(560,b'1','test4','$2a$10$qehG1C8ne4g..L/JSws6S.tO8lOdLRZdnbVgyXolECN9lmXONDUbi','DEPART','0');
+INSERT INTO credentials  VALUES(561,b'1','test5','$2a$10$Ygb1zSTjvqM/Dn96i19btuuT9K9L/tUbbcNONV6WQOB33AusHJdS.','DEPART','0');
+INSERT INTO credentials  VALUES(562,b'1','test6','$2a$10$rAMr.SzlDYC/nW6l5p3M9.8ZXEt.53QobKz4H5o3Yko.stc87aN.C','DEPART','0');
+INSERT INTO credentials  VALUES(563,b'1','test7','$2a$10$WATAYjXfdgGbYNmw2Um8UOpJluzIRUFwbYfq2NBB7lVmUSu.4cH4e','DEPART','0');
+INSERT INTO credentials  VALUES(564,b'1','test8','$2a$10$oB2egkky9JtISg5YDKOlqu3zdPloPy0Bro6U.wOw0.DroBdyCYeiG','DEPART','0');
+INSERT INTO credentials  VALUES(565,b'1','test9','$2a$10$IqlgKCpIPm1WWRndoBnH5.D/./zm77GysH37GFL0No/z16oPpIe/W','DEPART','0');
+INSERT INTO credentials  VALUES(566,b'1','test10','$2a$10$6vgL6f7TOavdD5hYb9xXg.5HZKrOtyz1djnBRg93SgpFFZW2216H6','DEPART','0');
+INSERT INTO credentials  VALUES(567,b'1','test11','$2a$10$oXcn5pRwedwUuVSr5gTrt.UplZ7aryAczz7n1XPB7Hoj0SaDxzAdy','DEPART','0');
+INSERT INTO credentials  VALUES(568,b'1','test12','$2a$10$YJ03YgUZd6wJX0ElW9KHDeygfGcOifkE2CiDCi9S4lJYopqie5lZK','DEPART','0');
+INSERT INTO credentials  VALUES(569,b'1','test13','$2a$10$lfINIlOlHT1uB.wwK6POzOXpVlh.modkyt.tN3nYhoTez4j22BKHm','DEPART','0');
+INSERT INTO credentials  VALUES(570,b'1','test14','$2a$10$BswkClgHJ.bYNCrmR/wwIOwbpKUvsxsS3/iMG5vFjiZB2/t4TmeWy','DEPART','0');
+INSERT INTO credentials  VALUES(571,b'1','test15','$2a$10$sJBVHlE5qqTlANuN0rC6q.0LhuMjeDI0dgqGbVVOQzxScjHLrmW4W','DEPART','0');
+INSERT INTO credentials  VALUES(572,b'1','test16','$2a$10$LkPw9CShUCPSmK6jsSOi4.ARmudh8e6zFHEZqxxX0dz2hEQRPTuaS','DEPART','0');
+INSERT INTO credentials  VALUES(573,b'1','test17','$2a$10$n0/qSqmhhXi9VLva2q95JetWzE/zTBHL9N/aGPgXAQ6dMsy/8wQFG','DEPART','0');
+INSERT INTO credentials  VALUES(574,b'1','test18','$2a$10$hvOCCxzRDYNxqMsP3ZrjF.jj.vqiI6y9ZqYsYILBJLh1U.2wcjU2u','DEPART','0');
+INSERT INTO credentials  VALUES(575,b'1','test19','$2a$10$fNYRFoE7Iu/pC1jDqQcQyeh7yVzmVoy8fGRI45DGqKAAmPX98nRtS','DEPART','0');
+INSERT INTO credentials  VALUES(576,b'1','test20','$2a$10$ZxGJ3zJhHLqfeaUizjoLYOkX/M/KjiU2f.AAFU8JWIdZR4ycwUurW','DEPART','0');
+INSERT INTO credentials  VALUES(577,b'1','S11_admin_ningbo','$2a$10$JoGNN2d6hwUjP5fEn3tO0ufVtA1O8L6goqPE2cc2XOXjCXDw4xPwi','DEPART','0');
+INSERT INTO credentials  VALUES(578,b'1','S11_normal_ningbo','$2a$10$uLJ2LMQeN8mzJpBBjKJkNeVrwStVvuTzKVSHXlWAh9Vh7ZQP8mBZ2','DEPART','0');
+
 
 
 INSERT INTO credentials_authorities VALUE (1,1);
@@ -1202,13 +1227,38 @@ INSERT INTO credentials_authorities VALUE (551,6);
 INSERT INTO credentials_authorities VALUE (552,6);
 INSERT INTO credentials_authorities VALUE (553,6);
 INSERT INTO credentials_authorities VALUE (554,6);
-
+INSERT INTO credentials_authorities VALUE (555,6);
+INSERT INTO credentials_authorities VALUE (556,6);
+INSERT INTO credentials_authorities VALUE (557,6);
+INSERT INTO credentials_authorities VALUE (558,6);
+INSERT INTO credentials_authorities VALUE (559,6);
+INSERT INTO credentials_authorities VALUE (560,6);
+INSERT INTO credentials_authorities VALUE (561,6);
+INSERT INTO credentials_authorities VALUE (562,6);
+INSERT INTO credentials_authorities VALUE (563,6);
+INSERT INTO credentials_authorities VALUE (564,6);
+INSERT INTO credentials_authorities VALUE (565,6);
+INSERT INTO credentials_authorities VALUE (566,6);
+INSERT INTO credentials_authorities VALUE (567,6);
+INSERT INTO credentials_authorities VALUE (568,6);
+INSERT INTO credentials_authorities VALUE (569,6);
+INSERT INTO credentials_authorities VALUE (570,6);
+INSERT INTO credentials_authorities VALUE (571,6);
+INSERT INTO credentials_authorities VALUE (572,6);
+INSERT INTO credentials_authorities VALUE (573,6);
+INSERT INTO credentials_authorities VALUE (574,6);
+INSERT INTO credentials_authorities VALUE (575,6);
+INSERT INTO credentials_authorities VALUE (576,6);
+INSERT INTO credentials_authorities VALUE (577,6);
+INSERT INTO credentials_authorities VALUE (578,6);
 
 
 INSERT INTO oauth_client_details VALUES('curl_client','product_api', '$2a$10$BurTWIy5NTF9GJJH4magz.9Bd4bBurWYG8tmXxeQh1vs7r/wnCFG2', 'read,write', 'client_credentials', 'http://127.0.0.1', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
 INSERT INTO oauth_client_details VALUES('root','public,secret', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'client_credentials', 'http://127.0.0.1', 'ROLE_TALENT_ADMIN', 7200, 0, NULL, 'true');
 INSERT INTO oauth_client_details VALUES('normal','public', '$2a$10$Jtl1jNwzt8zKt2LiBnmVu.orQ.JYTxEZkCKEpQChSgUNw2nYolmSS', 'read', 'client_credentials', 'http://127.0.0.1', 'ROLE_TALENT_NORMAL', 7200, 0, NULL, 'true');
 INSERT INTO oauth_client_details VALUES('test','product_api', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'authorization_code', 'http://127.0.0.1/oauth/code', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
-INSERT INTO oauth_client_details VALUES('talent','talent', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'authorization_code', 'http://210.14.118.96:8010/code', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
+INSERT INTO oauth_client_details VALUES('talent','talent', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'authorization_code', 'http://210.14.118.96/ep/cookie_talent.html', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
 INSERT INTO oauth_client_details VALUES('kexie','kexie', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'authorization_code', 'http://210.14.118.96/ep/cookie.html', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
+INSERT INTO oauth_client_details VALUES('test_talent','talent', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'authorization_code', '/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
+INSERT INTO oauth_client_details VALUES('test_kexie','kexie', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'authorization_code', '/oauth/code?back_to=http://210.14.118.96/ep/cookie.html', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
 */

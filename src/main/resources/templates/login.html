@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.login_1.html.org">
 <head>
+    <meta name="renderer" content="webkit" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>OAuth Server Login</title>
     <!--<link rel="stylesheet" href="webjars/bootstrap/3.3.2/css/bootstrap.min.css"/>-->
@@ -228,6 +229,39 @@
         color: darkgray;
         border-radius: 0px 8px 8px 0px;
     }
+    .alert{
+        display: none;
+        position: fixed;
+        top:50%;
+        left:50%;
+        min-width:300px;
+        max-width:600px;
+        transform:translate(-50%,-50%);
+        z-index:99999;
+        text-align: center;
+        padding:15px;
+        border-radius:3px;
+    }
+    .alert-success{
+        color:#3c763d;
+        background-color:#dff0d8;
+        border-color:#d6e9c6;
+    }
+    .alert-info {
+        color: #31708f;
+        background-color: #d9edf7;
+        border-color: #bce8f1;
+    }
+    .alert-warning{
+        color:#8a6d3b;
+        background-color:#fcf8e3;
+        border-color:#faebcc;
+    }
+    .alert-danger{
+        color:#a94442;
+        background-color:#f2dede;
+        border-color:#ebccd1;
+    }
 </style>
 <body>
 <div layout:fragment="content" th:remove="tag">
@@ -246,6 +280,8 @@
                     </div>
                     <!--action="login.do"-->
                     <form class="login-form" method="post"   action="login.do">
+                        <!--<p style="color: red" th:text="${error}" th:if="${not #strings.isEmpty(error)} "></p>-->
+                        <p  class="alert" > </p>
                         <!--输入框-->
                         <div class="input-content">
                             <!--autoFocus-->
@@ -296,7 +332,11 @@
 </body>
 <script th:inline="javascript">
     var s_from = [[${from}]];
-    var mess=[[${redirect1}]];
+    var err=[[${error}]];
+    if(err != null)
+    {
+        $('.alert').html(err).addClass('alert-danger').show().delay(3000).fadeOut();
+    }
 
     if(s_from!=null&&s_from!="all")
         setCookie("from",s_from,12);
