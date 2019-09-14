@@ -10,11 +10,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import org.apache.commons.logging.*;
-
 import java.util.List;
 
+/**
+ * Implemention of UserDetailsService for retrieval of  User information
+ * @author chengr
+ * @Time 2019-9-10
+ */
 public class JdbcUserDetails implements UserDetailsService{
 
     public static  Log log=LogFactory.getLog(JdbcUserDetails.class);

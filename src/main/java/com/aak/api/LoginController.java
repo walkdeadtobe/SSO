@@ -1,7 +1,6 @@
 package com.aak.api;
 
 import com.aak.configuration.MyApplication;
-import com.aak.configuration.ServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

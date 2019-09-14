@@ -15,6 +15,11 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 
 import javax.sql.DataSource;
 
+/**
+ * Implemention of ClientDetailsService for retrieval of  Client information
+ * @author chengr
+ * @Time 2019-9-10
+ */
 public class JdbcClientDetails implements ClientDetailsService
 {
 

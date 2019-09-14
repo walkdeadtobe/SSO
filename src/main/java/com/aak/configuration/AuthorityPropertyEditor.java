@@ -7,6 +7,13 @@ import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 
+/**
+ * Resolving Http Request Params/Object to use the special Object information
+ * Now useless
+ * @author chengr
+ * @Time 2019-9-10
+ */
+
 public class AuthorityPropertyEditor implements PropertyEditor {
 
     private GrantedAuthority grantedAuthority;

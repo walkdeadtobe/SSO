@@ -17,14 +17,29 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * Restful API about client information with authority
+ * Now useless
+ * @author chengr
+ * @Time 2019-9-10
+ */
+
 @Controller
 @RequestMapping("clients")
 public class ClientsController {
     @Autowired
     private JdbcClientDetailsService clientsDetailsService;
+
+    /**
+     *
+     * @description Bind WebRequest params/object with CustomEditor to resolve it
+     * @param binder
+     * @return void
+     * @author chengr
+     * @Time 2019-9-10
+     */
     @InitBinder
     public void initBinder(WebDataBinder binder){
-
         binder.registerCustomEditor(Collection.class,new SplitCollectionEditor(Set.class,","));
         binder.registerCustomEditor(GrantedAuthority.class,new AuthorityPropertyEditor());
 

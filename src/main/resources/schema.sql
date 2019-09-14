@@ -670,6 +670,14 @@ INSERT INTO credentials  VALUES(575,b'1','test19','$2a$10$fNYRFoE7Iu/pC1jDqQcQye
 INSERT INTO credentials  VALUES(576,b'1','test20','$2a$10$ZxGJ3zJhHLqfeaUizjoLYOkX/M/KjiU2f.AAFU8JWIdZR4ycwUurW','DEPART','0');
 INSERT INTO credentials  VALUES(577,b'1','S11_admin_ningbo','$2a$10$JoGNN2d6hwUjP5fEn3tO0ufVtA1O8L6goqPE2cc2XOXjCXDw4xPwi','DEPART','0');
 INSERT INTO credentials  VALUES(578,b'1','S11_normal_ningbo','$2a$10$uLJ2LMQeN8mzJpBBjKJkNeVrwStVvuTzKVSHXlWAh9Vh7ZQP8mBZ2','DEPART','0');
+INSERT INTO credentials  VALUES(579,b'1','jg_rczx_zonghe_admin','$2a$10$JQ74VelFXQiBlgAtxemZHuGhkbZg4DgAcNfmuX0Aq96wOKkvZVGtm','DEPART','0');
+INSERT INTO credentials  VALUES(580,b'1','jg_rczx_zhonghe_normal','$2a$10$ebToMx0Q4vwgKtAmpSusKeFUKs2jSa3bs0m0SSo1mh33KXsdV01fa','DEPART','0');
+INSERT INTO credentials  VALUES(581,b'1','jg_rczx_jiangli_admin','$2a$10$Ww3hkT.X8jxCN9A/2xAeyuaiD6sppges8GRiTW95TOsKR2h3RVZVy','DEPART','0');
+INSERT INTO credentials  VALUES(582,b'1','jg_rczx_jiangli_normal','$2a$10$d.dUg0oDlQRwmq2GwoxiOuv5s7CPtE53uvV7xuPK1F5DtQyT11urm','DEPART','0');
+INSERT INTO credentials  VALUES(583,b'1','jg_rczx_rencai_admin','$2a$10$Ma/sMOkdZHC4CJVEIAMX9u1d/I3XGxvfexcBiGtly3sQcWQ4zOpHq','DEPART','0');
+INSERT INTO credentials  VALUES(584,b'1','jg_rczx_rencai_normal','$2a$10$QnXwPu/BJqek.SpVdzKQHOD3nvjOkJDjyY.Y/863OEw1vEcQvgYb2','DEPART','0');
+INSERT INTO credentials  VALUES(585,b'1','jg_rczx_peixun_admin','$2a$10$PtKbDPEXyAErENxh4EYZOe42MhnpHVD7E4zjt/yP7x7LdGcjfy55m','DEPART','0');
+INSERT INTO credentials  VALUES(586,b'1','jg_rczx_peixun_normal','$2a$10$hZR8lfkCz2bMatHyl0o36..V6R2g1PPz2WPqaxtw8hVZol3OpIoxi','DEPART','0');
 
 
 
@@ -1251,6 +1259,14 @@ INSERT INTO credentials_authorities VALUE (575,6);
 INSERT INTO credentials_authorities VALUE (576,6);
 INSERT INTO credentials_authorities VALUE (577,6);
 INSERT INTO credentials_authorities VALUE (578,6);
+INSERT INTO credentials_authorities VALUE (579,6);
+INSERT INTO credentials_authorities VALUE (580,6);
+INSERT INTO credentials_authorities VALUE (581,6);
+INSERT INTO credentials_authorities VALUE (582,6);
+INSERT INTO credentials_authorities VALUE (583,6);
+INSERT INTO credentials_authorities VALUE (584,6);
+INSERT INTO credentials_authorities VALUE (585,6);
+INSERT INTO credentials_authorities VALUE (586,6);
 
 
 INSERT INTO oauth_client_details VALUES('curl_client','product_api', '$2a$10$BurTWIy5NTF9GJJH4magz.9Bd4bBurWYG8tmXxeQh1vs7r/wnCFG2', 'read,write', 'client_credentials', 'http://127.0.0.1', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');

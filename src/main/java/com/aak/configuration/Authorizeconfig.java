@@ -10,6 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+
+/**
+ * Configure to filter authorization request,add tags in the session , to remember where the request from
+ * @author chengr
+ * @Time 2019-9-10
+ */
+
 @Component
 @WebFilter(urlPatterns={"/oauth/authorize"})
 public class Authorizeconfig  implements Filter {

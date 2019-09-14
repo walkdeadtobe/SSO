@@ -21,21 +21,19 @@ import org.springframework.security.oauth2.provider.token.AuthorizationServerTok
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
-
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+
+/**
+ * Configuration about server
+ * @author chengr
+ * @Time 2019-9-10
+ */
 
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    /*@Autowired
-    private AuthorizationEndpoint authorizationEndpoint;
-
-    @PostConstruct
-    public void init() {
-       authorizationEndpoint
-    }*/
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource oauthDataSource() {

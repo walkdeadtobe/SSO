@@ -49,7 +49,7 @@ public class OauthController {
         Credentials credentials=credentialRepositoryy.findByName(user.getUsername());
 
 
-        /*log.info("user.getUsername():"+user.getUsername());
+        log.info("user.getUsername():"+user.getUsername());
         log.info("oAuth2AccessToken.toString():"+user.getPassword());
         Collection<GrantedAuthority> authorities=user.getAuthorities();
         Authority authority=(Authority)authorities.iterator().next();
@@ -68,7 +68,7 @@ public class OauthController {
         log.info(oAuth2Authentication.getOAuth2Request().getGrantType());
 
         log.info(oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next());
-        */
+
         return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authority.getAuthority()+"\",\"PERSON_ID\":\""+user.getUsername()+"\"}";
 
         }catch (Exception e){
