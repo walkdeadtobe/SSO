@@ -39,7 +39,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 
@@ -76,6 +78,9 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    Account_LogRepository account_logRepository;
+
     public static MyAuthenticationSuccessHandle tokenUtil;
 
 
@@ -87,10 +92,8 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
         tokenUtil = this;
         tokenUtil.jdbcClientDetailsService = this.jdbcClientDetailsService;
         tokenUtil.stringRedisTemplate=this.stringRedisTemplate;
+        tokenUtil.account_logRepository=this.account_logRepository;
     }
-
-
-
 
 
     @Override
@@ -189,7 +192,17 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
         while(it.hasNext()){
             log.info(it.next());
         }
-
+        String system="unknown";
+        if(response.getHeader("Location")!=null)
+        {
+            if(response.getHeader("Location").contains("talent"))
+            {
+                system="talent";
+            }else if(response.getHeader("Location").contains("kexie")){
+                system="kexie";
+            }
+        }
+        account_login(authentication,system);
         log.info("------------------end of header---------------");
         log.info(response.getHeader("Location"));
         log.info("-----------after MyAuthenticationSuccessHandle----------");
@@ -201,6 +214,15 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
 
     }
 
+    public void account_login(Authentication auth,String system){
+        //User user= (User)auth.getPrincipal();
+        //log.info("user.getUsername():"+user.getUsername());
+        //log.info("auth.getName():"+auth.getName());
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        System.out.println(df.format(new Date()));// 获取当前系统时间
+        Account_Log account_log=new Account_Log(auth.getName(),"login",df.format(new Date()),system);
+        tokenUtil.account_logRepository.saveAndFlush(account_log);
+    }
     private String createToken(Authentication authentication) {
         log.info("name:"+authentication.getName());
 

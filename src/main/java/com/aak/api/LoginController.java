@@ -1,6 +1,8 @@
 package com.aak.api;
 
 import com.aak.configuration.MyApplication;
+import com.aak.domain.Account_Log;
+import com.aak.repository.Account_LogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.provider.approval.Approval;
 import org.springframework.security.oauth2.provider.approval.ApprovalStore;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
@@ -34,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 @Controller
 public class LoginController {
@@ -45,6 +50,9 @@ public class LoginController {
 
     @Autowired
     private MyApplication myApplication ;
+
+    @Autowired
+    Account_LogRepository account_logRepository;
 
     private Logger log = LoggerFactory.getLogger(getClass());
     /*@RequestMapping(value = "/*",method = RequestMethod.OPTIONS)
@@ -188,10 +196,11 @@ public class LoginController {
 
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String query=request.getQueryString();
         if (auth != null){
             new SecurityContextLogoutHandler().logout(request, response, auth);
+            account_logout(auth,query);
         }
-        String query=request.getQueryString();
         if(query!=null&&query.contains("from="))
         {
             String port=myApplication.getPort();
@@ -212,5 +221,23 @@ public class LoginController {
             }
         }
         return new ModelAndView("redirect:/login?logout");
+    }
+
+    public void account_logout(Authentication auth,String query){
+        //User user= (User)auth.getPrincipal();
+        //log.info("user.getUsername():"+user.getUsername());
+        //log.info("auth.getName():"+auth.getName());
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        System.out.println(df.format(new Date()));// 获取当前系统时间
+        String system="unknown";
+        if(query!=null){
+            if(query.contains("from=talent")){
+                system="talent";
+            }else if(query.contains("from=kexie")){
+                system="kexie";
+            }
+        }
+        Account_Log account_log=new Account_Log(auth.getName(),"logout",df.format(new Date()),system);
+        account_logRepository.saveAndFlush(account_log);
     }
 }

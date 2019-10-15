@@ -64,7 +64,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     @Bean
     public AuthorizationServerTokenServices tokenServices() {
         DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-        defaultTokenServices.setAccessTokenValiditySeconds(2592000);
+        defaultTokenServices.setAccessTokenValiditySeconds(10);
         defaultTokenServices.setRefreshTokenValiditySeconds(-1);
         defaultTokenServices.setSupportRefreshToken(false);
         defaultTokenServices.setReuseRefreshToken(false);

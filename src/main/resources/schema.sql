@@ -83,7 +83,15 @@ create table if not exists oauth_approvals (
     expiresAt DATETIME,
     lastModifiedAt DATETIME
 );
-
+/*
+CREATE TABLE if not exists account_log (
+  username  varchar(255),
+  timestamp varchar(255),
+  type varchar(255),
+  from_system varchar(255),
+  primary key (username,timestamp)
+);
+ */
 
 /*
 INSERT INTO authority  VALUES(1,'ROLE_ADMIN');
@@ -678,6 +686,7 @@ INSERT INTO credentials  VALUES(583,b'1','jg_rczx_rencai_admin','$2a$10$Ma/sMOkd
 INSERT INTO credentials  VALUES(584,b'1','jg_rczx_rencai_normal','$2a$10$QnXwPu/BJqek.SpVdzKQHOD3nvjOkJDjyY.Y/863OEw1vEcQvgYb2','DEPART','0');
 INSERT INTO credentials  VALUES(585,b'1','jg_rczx_peixun_admin','$2a$10$PtKbDPEXyAErENxh4EYZOe42MhnpHVD7E4zjt/yP7x7LdGcjfy55m','DEPART','0');
 INSERT INTO credentials  VALUES(586,b'1','jg_rczx_peixun_normal','$2a$10$hZR8lfkCz2bMatHyl0o36..V6R2g1PPz2WPqaxtw8hVZol3OpIoxi','DEPART','0');
+INSERT INTO credentials  VALUES(587,b'1','jg_qqycxfwzx_special','$2a$10$HVumbC9dABuRcRGpzhSN3.Yel5Q.UBnsd/.yIhe1zyyHMIguAnDUW','DEPART','0');
 
 
 
@@ -1267,7 +1276,7 @@ INSERT INTO credentials_authorities VALUE (583,6);
 INSERT INTO credentials_authorities VALUE (584,6);
 INSERT INTO credentials_authorities VALUE (585,6);
 INSERT INTO credentials_authorities VALUE (586,6);
-
+INSERT INTO credentials_authorities VALUE (587,6);
 
 INSERT INTO oauth_client_details VALUES('curl_client','product_api', '$2a$10$BurTWIy5NTF9GJJH4magz.9Bd4bBurWYG8tmXxeQh1vs7r/wnCFG2', 'read,write', 'client_credentials', 'http://127.0.0.1', 'ROLE_PRODUCT_ADMIN', 7200, 0, NULL, 'true');
 INSERT INTO oauth_client_details VALUES('root','public,secret', '$2a$10$/wRQk2cqHy8iNdwjL9Oi4OJxryHtgd9Vhr9lW.OfYU7Eo1zvgos/G', 'read,write', 'client_credentials', 'http://127.0.0.1', 'ROLE_TALENT_ADMIN', 7200, 0, NULL, 'true');

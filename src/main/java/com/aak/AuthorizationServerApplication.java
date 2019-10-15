@@ -111,7 +111,7 @@ public class AuthorizationServerApplication {
 		}
 		log.info(print)；
 		 */
-		String back = passwordEncoder.encode("fresfgrc9");
+		String back = passwordEncoder.encode("tqqssjtxc");
 		log.info(back);
 		back = passwordEncoder.encode("ffwer32f");
 		log.info(back);

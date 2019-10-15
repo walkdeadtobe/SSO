@@ -61,6 +61,7 @@ public class OauthController {
         log.info("oAuth2AccessToken.getValue()"+oAuth2AccessToken.getValue());
         log.info(oAuth2AccessToken.getAdditionalInformation());
         log.info(oAuth2AccessToken.getRefreshToken());
+        log.info(oAuth2AccessToken.isExpired());
 
         log.info("oAuth2Authentication.getCredentials().toString():"+oAuth2Authentication.getCredentials().toString());
         log.info("oAuth2Authentication.getUserAuthentication().toString():"+oAuth2Authentication.getUserAuthentication().getPrincipal());
@@ -68,6 +69,7 @@ public class OauthController {
         log.info(oAuth2Authentication.getOAuth2Request().getGrantType());
 
         log.info(oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next());
+
 
         return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authority.getAuthority()+"\",\"PERSON_ID\":\""+user.getUsername()+"\"}";
 
