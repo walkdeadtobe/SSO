@@ -100,6 +100,7 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
         log.info("登录成功");
+        //createToken(authentication);
         //登陆成功后，删除错误登陆次数的统计
         //if(request.getParameter("username")!=null) //当能够登录成功说明能登陆，即在 loadusernamepassword 那一部分没有拦截，即 key 已经过期
         //   tokenUtil.stringRedisTemplate.delete(request.getParameter("username"));
@@ -218,7 +219,7 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
         //User user= (User)auth.getPrincipal();
         //log.info("user.getUsername():"+user.getUsername());
         //log.info("auth.getName():"+auth.getName());
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS");//设置日期格式
         System.out.println(df.format(new Date()));// 获取当前系统时间
         Account_Log account_log=new Account_Log(auth.getName(),"login",df.format(new Date()),system);
         tokenUtil.account_logRepository.saveAndFlush(account_log);
@@ -232,17 +233,22 @@ public class MyAuthenticationSuccessHandle implements AuthenticationSuccessHandl
             log.info("null");
             return null;
         }*/
-        jdbcClientDetailsService1=new JdbcClientDetailsService(tokenUtil.dataSource);
+        //jdbcClientDetailsService1=new JdbcClientDetailsService(tokenUtil.dataSource);
         //ClientDetails clientDetails=jdbcClientDetailsService1.loadClientByClientId(authentication.getName());
-        ClientDetails clientDetails = tokenUtil.jdbcClientDetailsService.loadClientByClientId(authentication.getName());
+        ClientDetails clientDetails = tokenUtil.jdbcClientDetailsService.loadClientByClientId("talent");
+        log.info("clientDetails.getAccessTokenValiditySeconds():"+clientDetails.getAccessTokenValiditySeconds());
         //clientDetails = jdbcClientDetails.loadClientByClientId(authentication.getName());
         log.info("authentication.getName():"+authentication.getName());
         TokenRequest tokenRequest=new TokenRequest(MapUtils.EMPTY_SORTED_MAP,authentication.getName(),clientDetails.getScope(),clientDetails.getAuthorizedGrantTypes().toString());
         OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
-
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
 
         OAuth2AccessToken token = tokenUtil.authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
+        //OAuth2AccessToken token1 =tokenUtil.authorizationServerTokenServices.refreshAccessToken(token.getValue(),tokenRequest);
+        log.info("expiration:"+token.getExpiration());
+        //log.info("expiration1:"+token1.getExpiration());
+        log.info("token.getExpiresIn():"+token.getExpiresIn());
+
         return token.toString();
     }
     }

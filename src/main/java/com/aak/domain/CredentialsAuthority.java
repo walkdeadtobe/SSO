@@ -17,7 +17,10 @@ public class CredentialsAuthority implements Serializable {
     @Column(name = "authorities_id")
     private Long authoritiesid;
 
-
+    public CredentialsAuthority(Long credentialsid, @NotEmpty Long authoritiesid) {
+        this.credentialsid = credentialsid;
+        this.authoritiesid = authoritiesid;
+    }
 
     public Long getId() {
         return credentialsid;

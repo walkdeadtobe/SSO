@@ -18,7 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.apache.commons.logging.*;
 import javax.sql.DataSource;
 import java.io.*;
-
+import com.aak.utils.AES;
 
 @ServletComponentScan
 @SpringBootApplication
@@ -27,7 +27,6 @@ import java.io.*;
 //@EnableAutoConfiguration
 //@ComponentScan
 public class AuthorizationServerApplication {
-
 	public static Log log= LogFactory.getLog(AuthorizationServerApplication.class);
 
 	/*@Bean
@@ -39,7 +38,9 @@ public class AuthorizationServerApplication {
 	 */
 
 	public static void main(String[] args) {
+		//AES.main();
 		//getbcryt();
+
 		SpringApplication.run(AuthorizationServerApplication.class, args);
 	}
 	public static void filereader(){
@@ -111,30 +112,9 @@ public class AuthorizationServerApplication {
 		}
 		log.info(print)；
 		 */
-		String back = passwordEncoder.encode("tqqssjtxc");
+		String back = passwordEncoder.encode("aq1as3eo");
 		log.info(back);
-		back = passwordEncoder.encode("ffwer32f");
+		back = passwordEncoder.encode("7fd5x7eq");
 		log.info(back);
-		back = passwordEncoder.encode("sf6awdg");
-		log.info(back);
-		back = passwordEncoder.encode("dsf82ki2");
-		log.info(back);
-		back = passwordEncoder.encode("1njfwe9");
-		log.info(back);
-		back = passwordEncoder.encode("3fsdfew8");
-		log.info(back);
-		back = passwordEncoder.encode("2vdfs92");
-		log.info(back);
-		back = passwordEncoder.encode("few22rfs");
-		log.info(back);
-/*
-	    back = passwordEncoder.encode("zhiku");
-		log.info(back);
-		back = passwordEncoder.encode("normal");
-		log.info(back);
-		String back = passwordEncoder.encode("inskygtj");
-		log.info(back);
-		back = passwordEncoder.encode("r3skyg9h");
-		log.info(back);*/
 	}
 }

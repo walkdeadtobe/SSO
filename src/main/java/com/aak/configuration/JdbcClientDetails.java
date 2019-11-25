@@ -33,6 +33,7 @@ public class JdbcClientDetails implements ClientDetailsService
 
     @Override
     public ClientDetails loadClientByClientId (String username) throws UsernameNotFoundException {
+        log.info("loadClientByClientId:"+username);
         log.info("find_before");
         ClientDetail clientDetail = clientDetailRepository.findByClientId(username);
         log.info("find_after");

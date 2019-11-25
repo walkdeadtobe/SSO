@@ -7,11 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.provider.approval.Approval;
 import org.springframework.security.oauth2.provider.approval.ApprovalStore;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
@@ -31,11 +28,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
 import static java.util.Arrays.asList;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -227,8 +223,8 @@ public class LoginController {
         //User user= (User)auth.getPrincipal();
         //log.info("user.getUsername():"+user.getUsername());
         //log.info("auth.getName():"+auth.getName());
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-        System.out.println(df.format(new Date()));// 获取当前系统时间
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS");//设置日期格式
+        //System.out.println(df.format(new Date()));// 获取当前系统时间
         String system="unknown";
         if(query!=null){
             if(query.contains("from=talent")){
@@ -239,5 +235,17 @@ public class LoginController {
         }
         Account_Log account_log=new Account_Log(auth.getName(),"logout",df.format(new Date()),system);
         account_logRepository.saveAndFlush(account_log);
+        //account_list();
+    }
+
+    public void account_list(){
+        List<Account_Log> list_account=account_logRepository.findAccount_LogsByUsername("root");
+        Iterator<Account_Log> iterator=list_account.iterator();
+        System.out.println(list_account.size());
+        while(iterator.hasNext()){
+            Account_Log account_log=iterator.next();
+            System.out.println(account_log.getTimestamp());
+        }
+
     }
 }

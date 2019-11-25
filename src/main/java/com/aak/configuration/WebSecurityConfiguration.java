@@ -1,5 +1,6 @@
 package com.aak.configuration;
 
+import com.aak.domain.ClientDetail;
 import com.aak.user.MyAuthenticationFailureHandler;
 import com.aak.user.MyAuthenticationSuccessHandle;
 import org.springframework.context.annotation.Bean;
@@ -11,9 +12,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsUtils;
@@ -34,9 +38,13 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new JdbcUserDetails();
     }
 
+    public ClientDetailsService clientDetailsServiceBean() throws  Exception{
+        return new JdbcClientDetails();
+    }
+
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/webjars/**","/resources/**","/imges/**","/css/**");
+        web.ignoring().antMatchers("/webjars/**","/resources/**","/imges/**","/css/**","/js/**");
 
     }
 
@@ -45,7 +53,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                .antMatchers("/login","/logout.do","/oauth/getAuth","/oauth/revoke_token","/oauth/check_token","/oauth/authorize","/oauth/token").permitAll()
+                .antMatchers("/login","/logout.do","/oauth/getAuth","/oauth/revoke_token","/oauth/check_token","/oauth/authorize","/oauth/token","/outside/**","/user/*").permitAll()
                 .antMatchers("/**").authenticated()
                 .and()
                 .formLogin()
@@ -63,7 +71,17 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .userDetailsService(userDetailsServiceBean());
         http
-                .cors();//.and().csrf().disable();
+                .cors()
+                .and().csrf().ignoringAntMatchers("/outside/information");
+
+        //add for bug
+        //https://github.com/thymeleaf/thymeleaf-spring/issues/110
+        //https://stackoverflow.com/a/53004917/5366876
+        http.sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
+
+
+        ///.and().csrf().disable();
 
     }
 

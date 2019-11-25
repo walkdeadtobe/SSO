@@ -1,16 +1,19 @@
 package com.aak.domain;
 
+import jdk.nashorn.internal.objects.annotations.Getter;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.util.List;
+import  lombok.*;
 
 @Entity
 @Table(name ="credentials")
 public class Credentials implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="id")
     private Long id;
 
@@ -30,6 +33,21 @@ public class Credentials implements Serializable {
     private List<Authority> authorities;
 
     private boolean enabled;
+
+    public Credentials() {
+    }
+
+    public Credentials(Long id, Integer version, @NotEmpty String name, @NotEmpty String password, @NotEmpty String department, List<Authority> authorities, boolean enabled) {
+        this.id=id;
+        this.version = version;
+        this.name = name;
+        this.password = password;
+        this.department = department;
+        this.authorities = authorities;
+        this.enabled = enabled;
+    }
+
+
 
     public Long getId() {
         return id;

@@ -1,38 +1,71 @@
 package com.aak.api;
 
+import com.aak.configuration.MyApplication;
 import com.aak.domain.*;
+import com.aak.repository.Account_LogRepository;
 import com.aak.repository.ClientDetailRepository;
 import com.aak.repository.CredentialRepository;
+import com.aak.utils.AES;
 import com.aak.utils.ApplicationSupport;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.hql.internal.ast.tree.AbstractNullnessCheckNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.security.oauth2.provider.TokenRequest;
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
+import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.userdetails.User;
 import org.apache.commons.logging.*;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.Null;
 import java.lang.Class;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.security.Principal;
+import java.util.*;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
+
+import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 @RestController
 public class OauthController {
     public static Log log= LogFactory.getLog(OauthController.class);
     @Autowired
     CredentialRepository credentialRepositoryy;
+
+    @Autowired
+    Account_LogRepository account_logRepository;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    JdbcClientDetailsService jdbcClientDetailsService;
+
+    @Autowired
+    private AuthorizationServerTokenServices authorizationServerTokenServices;
+
+    @Autowired
+    private MyApplication myApplication ;
 
     @RequestMapping("/oauth/check_token")
     public String check_token(@RequestParam(value = "token") String token){
@@ -43,40 +76,32 @@ public class OauthController {
 
         oAuth2Authentication = tokenStore.readAuthentication(token);
 
-        User user= (User)oAuth2Authentication.getUserAuthentication().getPrincipal();
-        oAuth2Authentication.getUserAuthentication().getPrincipal();
+        if( oAuth2Authentication.getPrincipal().getClass().getName()==User.class.getName())
+        {
+            User user= (User)oAuth2Authentication.getPrincipal();
+            Credentials credentials=credentialRepositoryy.findByName(user.getUsername());
 
-        Credentials credentials=credentialRepositoryy.findByName(user.getUsername());
+            Collection<GrantedAuthority> authorities=user.getAuthorities();
+            Authority authority=(Authority)authorities.iterator().next();
 
+            return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authority.getAuthority()+"\",\"PERSON_ID\":\""+user.getUsername()+"\"}";
 
-        log.info("user.getUsername():"+user.getUsername());
-        log.info("oAuth2AccessToken.toString():"+user.getPassword());
-        Collection<GrantedAuthority> authorities=user.getAuthorities();
-        Authority authority=(Authority)authorities.iterator().next();
-        log.info("auth:"+authority.getAuthority());
-        log.info(authorities.getClass().toString());
-        //Collection<Authority> back=(Collection<Authority>)authorities;
-        log.info("(user.getAuthorities().toString())):"+user.getAuthorities().toString());
-        log.info("oAuth2AccessToken.toString():"+oAuth2AccessToken.toString());
-        log.info("oAuth2AccessToken.getValue()"+oAuth2AccessToken.getValue());
-        log.info(oAuth2AccessToken.getAdditionalInformation());
-        log.info(oAuth2AccessToken.getRefreshToken());
-        log.info(oAuth2AccessToken.isExpired());
+        }else if (oAuth2Authentication.getUserAuthentication().getCredentials().getClass().getName()==Credentials.class.getName())
+        {
+            Credentials credentials=(Credentials)oAuth2Authentication.getUserAuthentication().getCredentials();
+            List<Authority> authorities=credentials.getAuthorities();
+            return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authorities.get(0).toString()+"\",\"PERSON_ID\":\""+credentials.getName()+"\"}";
 
-        log.info("oAuth2Authentication.getCredentials().toString():"+oAuth2Authentication.getCredentials().toString());
-        log.info("oAuth2Authentication.getUserAuthentication().toString():"+oAuth2Authentication.getUserAuthentication().getPrincipal());
-        log.info(oAuth2Authentication.getOAuth2Request().getAuthorities());
-        log.info(oAuth2Authentication.getOAuth2Request().getGrantType());
+        }else{
 
-        log.info(oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next());
+        }
 
 
-        return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authority.getAuthority()+"\",\"PERSON_ID\":\""+user.getUsername()+"\"}";
 
         }catch (Exception e){
             log.info(e.toString());
-            return "{\"status\":500,\"error\":\"Internal Server Error\",\"message\": \"token expired\"}";
         }
+        return "{\"status\":500,\"error\":\"Internal Server Error\",\"message\": \"token expired\"}";
 
     }
     @RequestMapping(value="/oauth/getAuth",method= RequestMethod.GET)
@@ -91,23 +116,11 @@ public class OauthController {
 
     @RequestMapping(value="/oauth/code",method= RequestMethod.GET)
     static void  test(HttpServletRequest request, HttpServletResponse response){
-        log.info("in /oauth/code");
+        //log.info("in /oauth/code");
         RequestCache requestCache= new HttpSessionRequestCache();
         Object s1 = request.getSession().getAttribute("refer");
-        if(s1!=null)
-            log.info("s1:"+s1.toString());
-        SavedRequest savedrequest = requestCache.getRequest(request,response);
-        if(savedrequest!=null) {
-            Collection<String> c = savedrequest.getHeaderNames();
-            Iterator<String> it = c.iterator();
-            if(savedrequest.getRedirectUrl()!=null)
-                log.info("savedrequest.getRedirectUrl():"+savedrequest.getRedirectUrl());
-            log.info("header start");
-            while (it.hasNext()) {
-                log.info(it.next());
-            }
-            log.info("header end");
-        }
+        //SavedRequest savedrequest = requestCache.getRequest(request,response);
+
         try {
             response.sendRedirect(request.getParameter("back_to")+"?code="+request.getParameter("code")+"&refer="+request.getSession().getAttribute("refer"));
         }catch (Exception e){
@@ -141,6 +154,198 @@ public class OauthController {
 
 
     }
+    @RequestMapping(value="/log/account",method= RequestMethod.GET)
+    public String   get_account_log(@RequestParam(value = "name") String name){
+        List<Account_Log> list_account=account_logRepository.findAccount_LogsByUsername(name);
+        Iterator<Account_Log> iterator=list_account.iterator();
+        System.out.println(list_account.size());
+        JSONObject object = new JSONObject();
+        int i=1;
+        while(iterator.hasNext()){
+            Account_Log account_log=iterator.next();
+            //System.out.println(account_log.getTimestamp());
+            JSONObject object_son = new JSONObject();
+            try {
+                object_son.put("username", account_log.getUsernanme());
+                object_son.put("timestamp", account_log.getTimestamp());
+                object_son.put("type", account_log.getType());
+                object_son.put("from_system", account_log.getSystem());
+                //System.out.println(object_son.toString());
+                object.put(i+"",object_son);
+                i++;
+            }catch (Exception e){
+                log.info(e.toString());
+            }
+
+        }
+        return object.toString();
+    }
+
+    @RequestMapping(value="/outside/check_uuid",method= RequestMethod.GET)
+    public ResponseEntity   check_uuid(@RequestParam(value = "uuid") String uuid){
+            if(stringRedisTemplate.opsForValue().get(uuid)!=null){
+                return ResponseEntity.ok().build();
+            }else{
+                return ResponseEntity.status(400).build();
+            }
+    }
+
+    @RequestMapping(value="/outside/uuid",method= RequestMethod.GET)
+    public String   make_uuid(@RequestParam(value = "system") String system,@RequestParam(value = "appId") String appId){
+        String url="http://111.203.146.69/kxyj/qcodelogin?appName=talent";
+        if(myApplication.getPort()=="80")
+            url="http://111.203.146.69/kxyj/qcodelogin?appName=talent";
+        else
+            url=" http://sso-smart.cast.org.cn:8080/kxyj/qcodelogin?appName=talent";
+        String uuid= UUID.randomUUID().toString();
+        String appKey= UUID.randomUUID().toString().substring(2,18);
+
+        log.info(uuid);
+        try{
+            if(appId.equals("kexieyijia")){
+                String uuid_value="{\"state\":\"0\",\"appKey\":\""+appKey+"\"}";
+                stringRedisTemplate.opsForValue().set(uuid,uuid_value);
+                url+="&token="+uuid+"&appKey="+appKey;
+                JSONObject jsonObject=new JSONObject();
+                jsonObject.put("url",url);
+                jsonObject.put("uuid",uuid);
+                url=jsonObject.toString();
+            }else{
+
+            }
+        }catch (Exception e){
+            log.info(e.toString());
+            return null;
+        }
+        return url;
+    }
+
+    @RequestMapping(value="/outside/confirm_information",method= RequestMethod.GET)
+    public String   confirm_login(HttpServletRequest request,@RequestParam(value = "uuid") String uuid){
+        String uuid_value,username;
+        JSONObject jsonObject;
+        Cookie[] cookies=request.getCookies();
+        if(stringRedisTemplate.hasKey(uuid)){
+            try{
+                log.info("hasuuid:"+uuid);
+                uuid_value=stringRedisTemplate.opsForValue().get(uuid);
+               if( new JSONObject(uuid_value).get("state").equals("0")){
+                   return null;
+               }
+                //stringRedisTemplate.opsForValue().get(uuid);
+                jsonObject=new JSONObject(uuid_value);
+                username=jsonObject.get("username").toString();
+            }catch (Exception e){
+                log.info(e.toString());
+                return null;
+            }
+
+            TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
+            Collection<OAuth2AccessToken> C_token=tokenStore.findTokensByClientIdAndUserName("kexieyijia",username);
+            log.info("size="+C_token.size());
+            if(C_token!=null && C_token.size()>0) {
+                Iterator<OAuth2AccessToken> iterator = C_token.iterator();
+                String token = iterator.next().toString();
+                String from=null;
+                String url="http://210.14.118.96/ep/cookie.html";
+                if(myApplication.getPort()=="80")
+                    url="http://210.14.118.96/ep/cookie.html";
+                else
+                    url=" http://smart.cast.org.cn/talent/cookie.html";
+
+                for(int i=0;i<cookies.length;i++)
+                {
+                    if(cookies[i].getName()=="from"){
+                        from=cookies[i].getValue();
+                    }
+                }
+                if(from!=null){
+                    if(myApplication.getPort()=="80"){
+                        //根据from返回 talent
+                        if(from=="talent"){
+                            //url="http://210.14.118.96/ep";
+                        }else{
+                            //url="http://210.14.118.96";
+                        }
+
+                    }else{
+                        //根据from 返回ep
+                        if(from=="talent"){
+                            //url="http://smart.cast.org.cn/talent";
+                        }else{
+                            //url="http://smart.cast.org.cn/";
+                        }
+                    }
+                }
+                return url+"?token="+token;
+            }
+        }else{
+
+        }
+        return null;
+    }
+
+    @RequestMapping(value="/outside/information",method= RequestMethod.POST)
+    public ResponseEntity   get_information(@RequestParam(value = "token") String uuid,@RequestParam(value = "ticket") String ticket){
+        try {
+            //JSONObject json = new JSONObject(body);
+            //String uuid=json.get("token").toString();
+            //String ticket=json.get("ticket").toString();
+            log.info("ticket:"+ticket);
+            AES aes=new AES("");
+            String user_name="username";
+            String uuid_value=stringRedisTemplate.opsForValue().get(uuid);
+            JSONObject jsonObject=new JSONObject(uuid_value);
+            if( jsonObject!=null) {
+                if(aes.Decrypt_now(ticket)!=null) {
+                    user_name="kexieyijia_" + aes.Decrypt_now(ticket);
+                }
+                jsonObject.put("username",user_name);
+                jsonObject.put("state","1");
+                String appKey=(String)jsonObject.get("appKey");
+                aes.Decrypt_now(ticket);
+            }
+            log.info("jsonObject.toString()"+jsonObject.toString());
+            stringRedisTemplate.opsForValue().set(uuid,jsonObject.toString());
+            log.info("uuid:"+stringRedisTemplate.opsForValue().get(uuid));
+
+
+            List<Authority> authorities=new ArrayList<>();
+
+            Authority authority=new Authority();
+            authority.setId(new Long(1));
+            authority.setAuthority("6");
+            authorities.add(authority);
+
+            Credentials principal=new Credentials();
+            principal.setName(user_name);
+            principal.setPassword(user_name);
+            principal.setDepartment("kexieyijia");
+            principal.setEnabled(true);
+            principal.setId(new Long(1));
+            principal.setVersion(1);
+            principal.setAuthorities(authorities);
+
+            Authentication  authentication=new UsernamePasswordAuthenticationToken(user_name,principal);
+
+            ClientDetails clientDetails = jdbcClientDetailsService.loadClientByClientId("kexieyijia");
+            TokenRequest tokenRequest=new TokenRequest(MapUtils.EMPTY_SORTED_MAP,uuid,clientDetails.getScope(),clientDetails.getAuthorizedGrantTypes().toString());
+            OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
+            OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
+            OAuth2AccessToken token = authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
+            //return token.toString();
+            return ResponseEntity.ok().build();
+
+        }catch (Exception e){
+            log.info(e.toString());
+
+        }
+        return ResponseEntity.status(400).build();
+
+
+
+    }
+
 
 
 

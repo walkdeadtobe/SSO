@@ -3,6 +3,8 @@ package com.aak.configuration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.Cookie;
+
 /**
  * Configure to get port of local server example port,address and  other information
  * @author chengr
@@ -25,6 +27,11 @@ public class MyApplication {
     }
     public void setPort(String port) {
         this.port = port;
+    }
+    public String getRedirect(Cookie[] cookie){
+        String redirect;
+
+        return null;
     }
 }
 

@@ -15,6 +15,14 @@ public class Authority implements GrantedAuthority,Serializable {
 
     private String authority;
 
+    public Authority() {
+    }
+
+    public Authority(Long id, String authority) {
+        this.id = id;
+        this.authority = authority;
+    }
+
     public Long getId() {
         return id;
     }

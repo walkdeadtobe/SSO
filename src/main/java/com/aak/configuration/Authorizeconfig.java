@@ -29,11 +29,11 @@ public class Authorizeconfig  implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        ServletRequest requestWrapper = null;
-        log.info("--------------------------------------------------------------:w");
+        //ServletRequest requestWrapper = null;
+        //log.info("--------------------------------------------------------------:w");
         if(servletRequest instanceof HttpServletRequest) {
-            //requestWrapper = new RequestWrapper((HttpServletRequest) servletRequest);
-            log.info("----------------------------------------------------------:s");
+            ///requestWrapper = new RequestWrapper((HttpServletRequest) servletRequest);
+            //log.info("----------------------------------------------------------:s");
             //String uri=((HttpServletRequest) servletRequest).getRequestURI();  uri不包含query_string
             String query=((HttpServletRequest) servletRequest).getQueryString();
             if(query!=null && query.contains("refer=")) {
@@ -43,8 +43,7 @@ public class Authorizeconfig  implements Filter {
                 if (back != null) {
                     for (int i = 0; i < back.length; i++) {
                         if (back[i].contains("refer=")) {
-
-                            log.info("back[i]:" + back[i]);
+                            //log.info("back[i]:" + back[i]);
                             refer = back[i].split("refer=")[1];
                             if (refer != null && !refer.equals(""))
                                 ((HttpServletRequest) servletRequest).getSession().setAttribute("refer", refer);
@@ -53,11 +52,12 @@ public class Authorizeconfig  implements Filter {
                 }
             }
         }
-        if(requestWrapper == null) {
+        filterChain.doFilter(servletRequest, servletResponse);
+        /*if(requestWrapper == null) {
             filterChain.doFilter(servletRequest, servletResponse);
         } else {
             filterChain.doFilter(requestWrapper, servletResponse);
-        }
+        }*/
     }
 
     @Override
