@@ -11,6 +11,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.hql.internal.ast.tree.AbstractNullnessCheckNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -154,32 +156,50 @@ public class OauthController {
 
 
     }
-    @RequestMapping(value="/log/account",method= RequestMethod.GET)
-    public String   get_account_log(@RequestParam(value = "name") String name){
-        List<Account_Log> list_account=account_logRepository.findAccount_LogsByUsername(name);
-        Iterator<Account_Log> iterator=list_account.iterator();
+    @RequestMapping(value = "/log/account", method = RequestMethod.GET)
+    public String get_account_log(@RequestParam(value = "name") String name) {
+        List<Account_Log> list_account = account_logRepository.findAccount_LogsByUsername(name);
+        Iterator<Account_Log> iterator = list_account.iterator();
         System.out.println(list_account.size());
-        JSONObject object = new JSONObject();
-        int i=1;
-        while(iterator.hasNext()){
-            Account_Log account_log=iterator.next();
-            //System.out.println(account_log.getTimestamp());
-            JSONObject object_son = new JSONObject();
-            try {
-                object_son.put("username", account_log.getUsernanme());
-                object_son.put("timestamp", account_log.getTimestamp());
-                object_son.put("type", account_log.getType());
-                object_son.put("from_system", account_log.getSystem());
-                //System.out.println(object_son.toString());
-                object.put(i+"",object_son);
-                i++;
-            }catch (Exception e){
-                log.info(e.toString());
-            }
 
+        JSONObject object = new JSONObject();
+        try {
+            object.put("username", name);
+            ArrayList<JSONObject> log = new ArrayList<JSONObject>();
+            if (!list_account.isEmpty()) {
+                Account_Log last_item = list_account.get(0);
+                for (int i = 1; i < list_account.size(); i++) {
+                    Account_Log curr = list_account.get(i);
+                    JSONObject t = new JSONObject();
+                    if (!curr.getType().equals(last_item.getType()) && curr.getType().equals("logout")) {
+                        t.put("login", last_item.getTimestamp());
+                        t.put("logout", curr.getTimestamp());
+                        log.add(t);
+                    } else if (curr.getType().equals(last_item.getType()) && curr.getType().equals("login")) { // 两次连续login
+                        long dur = curr.getDate().getTime() - last_item.getDate().getTime();
+                        Date mid_date;
+                        if (dur > 2 * 60 * 60 * 1000) { // 间隔大于两小时
+                            mid_date = new Date(last_item.getDate().getTime() + 2 * 60 * 60 * 1000);
+                        } else {
+                            mid_date = new Date(last_item.getDate().getTime() + dur / 2);
+                        }
+
+                        t.put("login", last_item.getTimestamp());
+                        t.put("logout", Account_Log.DateFormat.format(mid_date));
+                        log.add(t);
+                    }
+
+                    last_item = curr;
+                }
+            }
+            object.put("log", new JSONArray(log));
+        } catch (JSONException e) {
+            log.info(e.toString());
         }
+
         return object.toString();
     }
+
 
     @RequestMapping(value="/outside/check_uuid",method= RequestMethod.GET)
     public ResponseEntity   check_uuid(@RequestParam(value = "uuid") String uuid){
@@ -332,7 +352,7 @@ public class OauthController {
             TokenRequest tokenRequest=new TokenRequest(MapUtils.EMPTY_SORTED_MAP,uuid,clientDetails.getScope(),clientDetails.getAuthorizedGrantTypes().toString());
             OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
             OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
-            OAuth2AccessToken token = authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
+            OAuth2AccessToken ltoken = authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
             //return token.toString();
             return ResponseEntity.ok().build();
 
