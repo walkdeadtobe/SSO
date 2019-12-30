@@ -1,8 +1,11 @@
 package com.aak;
 
 import com.aak.api.OauthController;
+import com.aak.configuration.IpConfiguration;
+import com.aak.utils.MyUtils;
 import com.zaxxer.hikari.HikariDataSource;
 import org.omg.CORBA.BAD_CONTEXT;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,6 +32,7 @@ import com.aak.utils.AES;
 public class AuthorizationServerApplication {
 	public static Log log= LogFactory.getLog(AuthorizationServerApplication.class);
 
+
 	/*@Bean
 	@Primary
 	@ConfigurationProperties(prefix = "spring.datasource")
@@ -42,6 +46,7 @@ public class AuthorizationServerApplication {
 		//getbcryt();
 
 		SpringApplication.run(AuthorizationServerApplication.class, args);
+
 	}
 	public static void filereader(){
 		BCryptPasswordEncoder passwordEncoder=new BCryptPasswordEncoder();

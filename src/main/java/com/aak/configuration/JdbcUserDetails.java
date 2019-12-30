@@ -8,9 +8,11 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.apache.commons.logging.*;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,6 +20,7 @@ import java.util.List;
  * @author chengr
  * @Time 2019-9-10
  */
+@Service
 public class JdbcUserDetails implements UserDetailsService{
 
     public static  Log log=LogFactory.getLog(JdbcUserDetails.class);
@@ -33,6 +36,8 @@ public class JdbcUserDetails implements UserDetailsService{
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    public BCryptPasswordEncoder passwordEncoder;
 
     private String Max_Attempt="5";
 
@@ -51,27 +56,57 @@ public class JdbcUserDetails implements UserDetailsService{
         try {
             log.info("loadUserByUsername" + username);
             Credentials credentials = credentialRepository.findByName(username);
-            log.info("ame");
-            log.info("credentials.toString():" + credentials.getId().toString());
             CredentialsAuthority credentials_authority = credentials_authorityRepository.findByCredentialsid(credentials.getId());
-            log.info("credentials_authority..toString():" + credentials_authority.toString());
             List<Authority> authority = authorityRepository.findAuthoritiesById(credentials_authority.getAuthority());
-            log.info("authority.toString():" + authority.toString());
 
         if(credentials==null){
             throw new UsernameNotFoundException("User"+username+"can not be found");
         }
 
-
         User user = new User(credentials.getName(),credentials.getPassword(),credentials.isEnabled(),true,true,true,authority);
-
-        log.info(user.toString());
         return  user;
-
         }catch (Exception e){
             log.info(e.toString());
         }
         return null;
 
+    }
+
+    public boolean addUser(String username,String password,String department,long authority_id){
+        try{
+            passwordEncoder=new BCryptPasswordEncoder();
+            String authority=authorityRepository.findAuthoritiesById(authority_id).get(0).getAuthority();
+            log.info("authority:"+authority);
+            String password_real=passwordEncoder.encode(password);
+            Long num=credentialRepository.count();
+            //CredentialsAuthority credentialsAuthority=new CredentialsAuthority(num+1,authority_id);
+            List<Authority> authorities=new ArrayList<Authority>();
+            authorities.add(new Authority(authority_id,authority));
+
+            Credentials credentials=new Credentials(num+1,0,username,password_real,department,authorities,true);
+            String sql_credential="INSERT INTO credentials  VALUES("+(num+1)+",b\'1\',\'"+username+"\',\'"+password_real+"\',\'DEPART\',\'0\')";
+            String sql_credential_authority="INSERT INTO credentials_authorities  VALUES("+(num+1)+",6)";
+            log.info(sql_credential);
+            log.info(sql_credential_authority);
+            credentialRepository.saveAndFlush(credentials);
+            return true;
+        }catch(Exception e){
+            log.error(e.toString());
+            return false;
+        }
+    }
+
+
+    public boolean updateUserPassword(String username,String password){
+        try {
+            passwordEncoder = new BCryptPasswordEncoder();
+            String password_real = passwordEncoder.encode(password);
+            Credentials find = credentialRepository.findByName(username);
+            find.setPassword(password_real);
+            return true;
+        }catch(Exception e){
+            log.error(e.toString());
+            return false;
+        }
     }
 }

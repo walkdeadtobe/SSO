@@ -5,9 +5,9 @@ create table if not exists oauth_client_token (
   token_id VARCHAR(255),
   token LONGBLOB,
   authentication_id VARCHAR(255),
-  user_name VARCHAR(255),
+  user_name VARCHAR(255) CHARACTER SET utf8,
   client_id VARCHAR(255)
-);
+)character set = utf8;
 
 
 
@@ -33,11 +33,11 @@ create table if not exists oauth_access_token (
   token_id VARCHAR(255),
   token LONGBLOB,
   authentication_id VARCHAR(255),
-  user_name VARCHAR(255),
+  user_name VARCHAR(255) CHARACTER SET utf8,
   client_id VARCHAR(255),
   authentication LONGBLOB,
   refresh_token VARCHAR(255)
-);
+)character set = utf8;
 drop table if exists oauth_refresh_token;
 create table if not exists  oauth_refresh_token(
   token_id VARCHAR(255),
@@ -58,12 +58,12 @@ drop table if exists credentials;
 CREATE TABLE if not exists credentials (
   id  integer,
   enabled boolean not null,
-  name varchar(255) not null,
-  password varchar(255) not null,
+  name varchar(255) CHARACTER SET utf8 not null,
+  password varchar(255) CHARACTER SET utf8 not null,
   department varchar(255) not null,
   version integer,
   primary key (id)
-);
+)character set = utf8 ;
 drop table if exists credentials_authorities;
 CREATE TABLE if not exists credentials_authorities (
   credentials_id bigint not null,
@@ -87,12 +87,12 @@ create table if not exists oauth_approvals (
 */
 /*
 CREATE TABLE if not exists account_log (
-  username  varchar(255),
+  username  varchar(255) CHARACTER SET utf8,
   timestamp varchar(255),
   type varchar(255),
   from_system varchar(255),
   primary key (username,timestamp)
-);
+) character set = utf8;
  */
 
 /*

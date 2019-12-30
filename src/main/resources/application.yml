@@ -13,7 +13,7 @@ spring:
       connection-timeout: 30000
       idle-timeout: 30000
     driver-class-name: com.mysql.jdbc.Driver
-    jdbc-url: jdbc:mysql://localhost:3306/oauth?useUnicode=true&characterEncoding=gbk&serverTimezone=UTC&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+    jdbc-url: jdbc:mysql://localhost:3306/oauth?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: Qwer!@#4
     initialization-mode: always
@@ -26,7 +26,7 @@ spring:
       ddl-auto: none
 # --- server
 server:
-  port: 8080
+  #port: 8080
   address: 0.0.0.0
 security:
   oauth2:

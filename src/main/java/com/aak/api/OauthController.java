@@ -1,15 +1,16 @@
 package com.aak.api;
 
-import com.aak.configuration.MyApplication;
+import com.aak.configuration.IpConfiguration;
+import com.aak.configuration.JdbcUserDetails;
 import com.aak.domain.*;
 import com.aak.repository.Account_LogRepository;
-import com.aak.repository.ClientDetailRepository;
 import com.aak.repository.CredentialRepository;
 import com.aak.utils.AES;
 import com.aak.utils.ApplicationSupport;
+import com.aak.utils.MyUtils;
+import com.aak.utils.SynUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.hql.internal.ast.tree.AbstractNullnessCheckNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -27,9 +27,6 @@ import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.userdetails.User;
 import org.apache.commons.logging.*;
@@ -37,16 +34,9 @@ import org.apache.commons.logging.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.Null;
-import java.lang.Class;
-import java.security.Principal;
 import java.util.*;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
-
-import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 @RestController
 public class OauthController {
@@ -61,14 +51,18 @@ public class OauthController {
     private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
-    JdbcClientDetailsService jdbcClientDetailsService;
+    private JdbcClientDetailsService jdbcClientDetailsService;
+
+    @Autowired
+    private JdbcUserDetails jdbcUserDetails;
 
     @Autowired
     private AuthorizationServerTokenServices authorizationServerTokenServices;
 
     @Autowired
-    private MyApplication myApplication ;
+    private IpConfiguration ipConfiguration;
 
+    @SuppressWarnings("unchecked")
     @RequestMapping("/oauth/check_token")
     public String check_token(@RequestParam(value = "token") String token){
         try{
@@ -78,27 +72,12 @@ public class OauthController {
 
         oAuth2Authentication = tokenStore.readAuthentication(token);
 
-        if( oAuth2Authentication.getPrincipal().getClass().getName()==User.class.getName())
-        {
-            User user= (User)oAuth2Authentication.getPrincipal();
-            Credentials credentials=credentialRepositoryy.findByName(user.getUsername());
+        User user= (User)oAuth2Authentication.getPrincipal();
+        Credentials credentials=credentialRepositoryy.findByName(user.getUsername());
+        Collection<GrantedAuthority> authorities=user.getAuthorities();
+        Authority authority=(Authority)authorities.iterator().next();
 
-            Collection<GrantedAuthority> authorities=user.getAuthorities();
-            Authority authority=(Authority)authorities.iterator().next();
-
-            return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authority.getAuthority()+"\",\"PERSON_ID\":\""+user.getUsername()+"\"}";
-
-        }else if (oAuth2Authentication.getUserAuthentication().getCredentials().getClass().getName()==Credentials.class.getName())
-        {
-            Credentials credentials=(Credentials)oAuth2Authentication.getUserAuthentication().getCredentials();
-            List<Authority> authorities=credentials.getAuthorities();
-            return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authorities.get(0).toString()+"\",\"PERSON_ID\":\""+credentials.getName()+"\"}";
-
-        }else{
-
-        }
-
-
+        return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authority.getAuthority()+"\",\"PERSON_ID\":\""+user.getUsername()+"\"}";
 
         }catch (Exception e){
             log.info(e.toString());
@@ -116,13 +95,15 @@ public class OauthController {
 
     }
 
+    /**
+     * 按照 oauth2 的登陆验证流程，验证 用户名 和 密码 正确之后，会直接跳转回之前约定的网址，在此过程，我们添加一一些自己的东西
+     * 所以 之前约定为 本地的网址，即/oauth/code ，之后可以在本函数中添加相关处理，并执行后续的流程
+     * @param request
+     * @param response
+     */
     @RequestMapping(value="/oauth/code",method= RequestMethod.GET)
-    static void  test(HttpServletRequest request, HttpServletResponse response){
-        //log.info("in /oauth/code");
-        RequestCache requestCache= new HttpSessionRequestCache();
+    static void  middle(HttpServletRequest request, HttpServletResponse response){
         Object s1 = request.getSession().getAttribute("refer");
-        //SavedRequest savedrequest = requestCache.getRequest(request,response);
-
         try {
             response.sendRedirect(request.getParameter("back_to")+"?code="+request.getParameter("code")+"&refer="+request.getSession().getAttribute("refer"));
         }catch (Exception e){
@@ -141,17 +122,10 @@ public class OauthController {
            tokenStore.removeAccessToken(accessToken);
            log.info("remove ok");
            return ResponseEntity.ok().build();
-
-           //(new HttpServletResponse()).setStatus(200);
-           //return;
        }catch(Exception e){
            System.out.println(e);
            log.info("remove failure");
-           return ResponseEntity.ok().header("error",e.toString()).build();
-           //response.addHeader("error",e.toString());
-           //response.setStatus(400);
-           //return;
-
+           return ResponseEntity.status(400).header("error",e.toString()).build();
        }
 
 
@@ -183,12 +157,10 @@ public class OauthController {
                         } else {
                             mid_date = new Date(last_item.getDate().getTime() + dur / 2);
                         }
-
                         t.put("login", last_item.getTimestamp());
                         t.put("logout", Account_Log.DateFormat.format(mid_date));
                         log.add(t);
                     }
-
                     last_item = curr;
                 }
             }
@@ -202,30 +174,53 @@ public class OauthController {
 
 
     @RequestMapping(value="/outside/check_uuid",method= RequestMethod.GET)
-    public ResponseEntity   check_uuid(@RequestParam(value = "uuid") String uuid){
-            if(stringRedisTemplate.opsForValue().get(uuid)!=null){
-                return ResponseEntity.ok().build();
-            }else{
-                return ResponseEntity.status(400).build();
-            }
+    public ResponseEntity   check_uuid_v1(@RequestParam(value = "uuid") String uuid){
+        if(stringRedisTemplate.opsForValue().get(uuid)!=null){
+            return ResponseEntity.ok().build();
+        }else{
+            return ResponseEntity.status(400).build();
+        }
+    }
+
+    @RequestMapping(value="/outside/authenticate",method= RequestMethod.POST)
+    public ResponseEntity   check_uuid(@RequestBody String json){
+        String AppKey="123";///"de1a98dcf5a32ff7fddfbcfb795c518a";
+        JSONObject app;
+        try {
+            app = new JSONObject(json);
+            String AppSecret = SynUtil.AESDecode(AppKey,app.getString("appSecret"));
+            String AuthCode = SynUtil.AESDecode(AppKey,app.getString("authCode"));
+            log.info(AuthCode+" "+AppSecret);
+        }catch(Exception e){
+            log.info(e.toString());
+            return ResponseEntity.status(500).body("{\"resultCode\":0,\"resultMessage\":\"格式错误\"}");
+        }
+        try{
+            JSONObject back = new JSONObject();
+            back.put("resultCode",1);
+            back.put("resultMessage","验证正确");
+            return ResponseEntity.status(200).body(back.toString(1));
+        }catch(JSONException e){
+            log.info(e.toString());
+            return ResponseEntity.status(500).body("系统错误");
+        }
+
     }
 
     @RequestMapping(value="/outside/uuid",method= RequestMethod.GET)
     public String   make_uuid(@RequestParam(value = "system") String system,@RequestParam(value = "appId") String appId){
-        String url="http://111.203.146.69/kxyj/qcodelogin?appName=talent";
-        if(myApplication.getPort()=="80")
-            url="http://111.203.146.69/kxyj/qcodelogin?appName=talent";
+        String url="http://111.203.146.69/kxyj/qcodelogin?appName=talent&appID="+appId;
+        if(ipConfiguration.getPort()==80)
+            url="http://111.203.146.69/kxyj/qcodelogin?appName=talent&appID="+appId;
         else
-            url=" http://sso-smart.cast.org.cn:8080/kxyj/qcodelogin?appName=talent";
+            url="http://sso-smart.cast.org.cn:8080/kxyj/qcodelogin?appName=talent&appID="+appId;
         String uuid= UUID.randomUUID().toString();
-        String appKey= UUID.randomUUID().toString().substring(2,18);
-
         log.info(uuid);
         try{
             if(appId.equals("kexieyijia")){
-                String uuid_value="{\"state\":\"0\",\"appKey\":\""+appKey+"\"}";
+                String uuid_value="{\"state\":\"0\"}";
                 stringRedisTemplate.opsForValue().set(uuid,uuid_value);
-                url+="&token="+uuid+"&appKey="+appKey;
+                url+="&authCode="+uuid+"&token="+uuid;
                 JSONObject jsonObject=new JSONObject();
                 jsonObject.put("url",url);
                 jsonObject.put("uuid",uuid);
@@ -244,6 +239,7 @@ public class OauthController {
     public String   confirm_login(HttpServletRequest request,@RequestParam(value = "uuid") String uuid){
         String uuid_value,username;
         JSONObject jsonObject;
+        MyUtils myUtils = new MyUtils();
         Cookie[] cookies=request.getCookies();
         if(stringRedisTemplate.hasKey(uuid)){
             try{
@@ -262,41 +258,22 @@ public class OauthController {
 
             TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
             Collection<OAuth2AccessToken> C_token=tokenStore.findTokensByClientIdAndUserName("kexieyijia",username);
-            log.info("size="+C_token.size());
+            log.info("size="+C_token.size()+";username="+username);
             if(C_token!=null && C_token.size()>0) {
                 Iterator<OAuth2AccessToken> iterator = C_token.iterator();
                 String token = iterator.next().toString();
                 String from=null;
-                String url="http://210.14.118.96/ep/cookie.html";
-                if(myApplication.getPort()=="80")
-                    url="http://210.14.118.96/ep/cookie.html";
-                else
-                    url=" http://smart.cast.org.cn/talent/cookie.html";
+                String url;///="http://210.14.118.96/ep/cookie.html";
 
-                for(int i=0;i<cookies.length;i++)
-                {
-                    if(cookies[i].getName()=="from"){
-                        from=cookies[i].getValue();
+                JSONObject jsonObject1 = myUtils.cookie_2_json(cookies);
+                if(jsonObject1.has("from")){
+                    try{
+                        from = jsonObject1.getString("from");
+                    }catch(JSONException e){
+                        log.error(e.toString());
                     }
                 }
-                if(from!=null){
-                    if(myApplication.getPort()=="80"){
-                        //根据from返回 talent
-                        if(from=="talent"){
-                            //url="http://210.14.118.96/ep";
-                        }else{
-                            //url="http://210.14.118.96";
-                        }
-
-                    }else{
-                        //根据from 返回ep
-                        if(from=="talent"){
-                            //url="http://smart.cast.org.cn/talent";
-                        }else{
-                            //url="http://smart.cast.org.cn/";
-                        }
-                    }
-                }
+                url = myUtils.get_redirect(from);
                 return url+"?token="+token;
             }
         }else{
@@ -305,69 +282,86 @@ public class OauthController {
         return null;
     }
 
+    public void create_token(String user_name,String clientId){
+        List<Authority> authorities=new ArrayList<>();
+        Authority authority=new Authority();
+        authority.setId(new Long(1));
+        authority.setAuthority("6");
+        authorities.add(authority);
+
+        User user = new User(user_name,user_name,authorities);
+        Authentication  authentication=new UsernamePasswordAuthenticationToken(user,null);
+
+        ClientDetails clientDetails = jdbcClientDetailsService.loadClientByClientId(clientId);
+        TokenRequest tokenRequest=new TokenRequest(MapUtils.EMPTY_SORTED_MAP,clientId,clientDetails.getScope(),clientDetails.getAuthorizedGrantTypes().toString());
+        OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
+        OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
+        authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
+    }
+
+    /**
+     * 两个版本并行存在，因而要做一些判断
+     * 版本v1:参数token，ticket
+     * 版本v2:参数json
+     * @param token
+     * @param ticket
+     * @param json
+     * @return
+     */
     @RequestMapping(value="/outside/information",method= RequestMethod.POST)
-    public ResponseEntity   get_information(@RequestParam(value = "token") String uuid,@RequestParam(value = "ticket") String ticket){
+    public ResponseEntity   get_information(@RequestParam(value ="token" ,required = false)String token,@RequestParam(value ="ticket" ,required = false)String ticket,@RequestBody(required = false) String json){
         try {
-            //JSONObject json = new JSONObject(body);
-            //String uuid=json.get("token").toString();
-            //String ticket=json.get("ticket").toString();
-            log.info("ticket:"+ticket);
-            AES aes=new AES("");
+            String AppKey="de1a98dcf5a32ff7fddfbcfb795c518a";
             String user_name="username";
-            String uuid_value=stringRedisTemplate.opsForValue().get(uuid);
-            JSONObject jsonObject=new JSONObject(uuid_value);
-            if( jsonObject!=null) {
+            String uuid=null;
+            if(token != null){
+                uuid=token;
+                AES aes=new AES("");
                 if(aes.Decrypt_now(ticket)!=null) {
                     user_name="kexieyijia_" + aes.Decrypt_now(ticket);
                 }
-                jsonObject.put("username",user_name);
-                jsonObject.put("state","1");
-                String appKey=(String)jsonObject.get("appKey");
-                aes.Decrypt_now(ticket);
+                String uuid_value=stringRedisTemplate.opsForValue().get(uuid);
+                JSONObject jsonObject=new JSONObject(uuid_value);
+                if(jsonObject != null){
+                    log.info("jsonObject_username:"+user_name);
+                    jsonObject.put("username",user_name);
+                    jsonObject.put("state","1");
+                }
+                stringRedisTemplate.opsForValue().set(uuid,jsonObject.toString());
+            }else {
+                SynUtil synUtil = new SynUtil();
+                JSONObject json1 = new JSONObject(json);
+                String authCode=json1.getString("authCode");
+                String information1=json1.getString("information");
+                uuid = authCode;
+                JSONObject information = new JSONObject(information1);
+                String uuid_value = stringRedisTemplate.opsForValue().get(uuid);
+                JSONObject jsonObject = new JSONObject(uuid_value);
+                if (jsonObject != null) {
+                    user_name = synUtil.AESDecode(AppKey,information.getString("name"));
+                    String duty = synUtil.AESDecode(AppKey,information.getString("position"));
+                    user_name = "kexieyijia_" +  user_name ;
+                    jsonObject.put("username", user_name);
+                    jsonObject.put("state", "1");
+                }
+                stringRedisTemplate.opsForValue().set(uuid,jsonObject.toString());
             }
-            log.info("jsonObject.toString()"+jsonObject.toString());
-            stringRedisTemplate.opsForValue().set(uuid,jsonObject.toString());
-            log.info("uuid:"+stringRedisTemplate.opsForValue().get(uuid));
 
+            if(jdbcUserDetails.loadUserByUsername(user_name)==null)
+                jdbcUserDetails.addUser(user_name,user_name,"DEPART",6);
+            create_token(user_name,"kexieyijia");
 
-            List<Authority> authorities=new ArrayList<>();
-
-            Authority authority=new Authority();
-            authority.setId(new Long(1));
-            authority.setAuthority("6");
-            authorities.add(authority);
-
-            Credentials principal=new Credentials();
-            principal.setName(user_name);
-            principal.setPassword(user_name);
-            principal.setDepartment("kexieyijia");
-            principal.setEnabled(true);
-            principal.setId(new Long(1));
-            principal.setVersion(1);
-            principal.setAuthorities(authorities);
-
-            Authentication  authentication=new UsernamePasswordAuthenticationToken(user_name,principal);
-
-            ClientDetails clientDetails = jdbcClientDetailsService.loadClientByClientId("kexieyijia");
-            TokenRequest tokenRequest=new TokenRequest(MapUtils.EMPTY_SORTED_MAP,uuid,clientDetails.getScope(),clientDetails.getAuthorizedGrantTypes().toString());
-            OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
-            OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
-            OAuth2AccessToken ltoken = authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
-            //return token.toString();
             return ResponseEntity.ok().build();
 
-        }catch (Exception e){
+        }catch(JSONException e){
             log.info(e.toString());
+            return ResponseEntity.status(500).body("{\"resultCode\":0,\"resultMessage\":\"格式错误\"}");
+        }catch(Exception e){
+            log.info(e.toString());
+            return ResponseEntity.status(400).build();
+
+        }finally {
 
         }
-        return ResponseEntity.status(400).build();
-
-
-
     }
-
-
-
-
-
 }

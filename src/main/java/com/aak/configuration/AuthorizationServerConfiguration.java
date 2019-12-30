@@ -48,6 +48,12 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     }
 
     @Bean
+    public JdbcClientDetails myClientDetailsService() {
+        return new JdbcClientDetails();
+        //return new JdbcClientDetails();
+    }
+
+    @Bean
     public TokenStore tokenStore() {
         return new JdbcTokenStore(oauthDataSource());
     }
@@ -72,13 +78,15 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
         defaultTokenServices.setSupportRefreshToken(false);
         defaultTokenServices.setReuseRefreshToken(false);
         defaultTokenServices.setTokenStore(tokenStore());
-        defaultTokenServices.setClientDetailsService(clientDetailsService());
+        //defaultTokenServices.setClientDetailsService(clientDetailsService());
+        defaultTokenServices.setClientDetailsService(myClientDetailsService());
         return defaultTokenServices;
     }
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.withClientDetails(clientDetailsService());
+        //clients.withClientDetails(clientDetailsService());
+        clients.withClientDetails(myClientDetailsService());
     }
 
     @Override

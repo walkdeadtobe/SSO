@@ -5,6 +5,7 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
@@ -34,6 +35,47 @@ public class AES {
             throw new RuntimeException(e);
         }
     }
+    /**
+     * Generate key by keyword and aes 128
+     * @param keyword
+     * @return key
+     */
+    public String key_generate(String keyword){
+        try {
+            KeyGenerator kg = KeyGenerator.getInstance("AES");
+            kg.init(128, new SecureRandom(keyword.getBytes()));
+            SecretKey sk = kg.generateKey();
+            byte[] b = sk.getEncoded();
+            String s = byteToHexString(b);
+            System.out.println(s);
+        }catch(Exception e){
+            log.info(e.toString());
+
+        }
+        return null;
+    }
+    /**
+     * transform byte array to hex string
+     * @param bytes
+     * @return string
+     */
+    public static String byteToHexString(byte[] bytes){
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < bytes.length; i++) {
+            String strHex=Integer.toHexString(bytes[i]);
+            if(strHex.length() > 3){
+                sb.append(strHex.substring(6));
+            } else {
+                if(strHex.length() < 2){
+                    sb.append("0" + strHex);
+                } else {
+                    sb.append(strHex);
+                }
+            }
+        }
+        return  sb.toString();
+    }
+
     public  String EncryptString(String str,String key) {
         try {
             byte[] raw = key.getBytes("utf-8");
@@ -75,21 +117,24 @@ public class AES {
         try{
            // byte[] back= (new Base64()).decode(str);
             //return back.toString();
+            System.out.println("str:"+str);
             if(!str.matches("mobile=[0-9]{0,20},userName=.{1,200}"))
                 return null;
             String[] back=str.split(",");
             String name="";
             String mobile="";
             for(int i=0;i<back.length;i++) {
-                if (back[i].split("=")[0] == "mobile")
+                if (back[i].split("=")[0].equals("mobile"))
                     mobile = back[i].split("=")[1];
-                if (back[i].split("=")[0] == "userName")
+                if (back[i].split("=")[0].equals( "userName"))
                     name = back[i].split("=")[1];
             }
             String uuid=name+"-"+mobile;
             MessageDigest m = MessageDigest.getInstance("MD5");
             m.update(uuid.getBytes("UTF-8"));
-            return ByteUtils.toHexString(m.digest());
+            System.out.println("name:"+name);
+            //return ByteUtils.toHexString(m.digest());
+            return name;
 
         }catch (Exception e){
             log.info(e.toString());
@@ -98,13 +143,20 @@ public class AES {
 
     }
 
-    public static void main(){
+    public static void main(String []args){
         AES aes=new AES("sss");
+        /*
         String back=aes.EncryptString("aaaaa","1234567890123456");
         log.info("back:"+back);
         log.info("base:"+aes.Decrypt_now(back));
         String origin=aes.Decrypt(back,"1234567890123456");
         log.info("origin:"+origin);
+        */
+        String appkey="kexieyjiaapp",appsecret="kexieyijia-smart";
+        aes.key_generate(appkey);
+        //de1a98dcf5a32ff7fddfbcfb795c518a
+        aes.key_generate(appsecret);
+        //527305d2b60356e0e498c056a1c610d1
 
     }
 

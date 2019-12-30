@@ -72,7 +72,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .userDetailsService(userDetailsServiceBean());
         http
                 .cors()
-                .and().csrf().ignoringAntMatchers("/outside/information");
+                .and().csrf().ignoringAntMatchers("/outside/information","/outside/authenticate");
 
         //add for bug
         //https://github.com/thymeleaf/thymeleaf-spring/issues/110

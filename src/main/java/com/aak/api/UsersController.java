@@ -1,16 +1,29 @@
 package com.aak.api;
 
+import com.aak.configuration.JdbcClientDetails;
+import com.aak.configuration.JdbcUserDetails;
 import com.aak.domain.Authority;
 import com.aak.domain.Credentials;
 import com.aak.domain.CredentialsAuthority;
+import com.aak.repository.AuthorityRepository;
 import com.aak.repository.CredentialRepository;
 import com.aak.repository.Credentials_AuthorityRepository;
+import com.aak.utils.ApplicationSupport;
 import jdk.nashorn.internal.runtime.Debug;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,35 +44,64 @@ import java.util.List;
 //@RequestMapping("user")
 public class UsersController {
     public BCryptPasswordEncoder passwordEncoder;
+
+
+    private  static String  ROLE_ADMIN="ROLE_ADMIN";
+
     @Autowired
     public CredentialRepository credentialRepository;
     @Autowired
     public Credentials_AuthorityRepository credentials_authorityRepository;
+
+    @Autowired
+    public AuthorityRepository authorityRepository;
+
+    @Autowired
+    private JdbcUserDetails jdbcUserDetails;
+
     private Logger log = LoggerFactory.getLogger(getClass());
 
     @RequestMapping(value = "/user/add",method = RequestMethod.GET)
-    public String  addUser(@RequestParam(value = "name") String name, @RequestParam(value = "password") String password)
+    public ResponseEntity  addUser(@RequestParam(value = "name") String name, @RequestParam(value = "password") String password, @RequestParam(value = "token") String token )
     {
-        long authority_id=6;
-        passwordEncoder=new BCryptPasswordEncoder();
-        String password_real=passwordEncoder.encode(password);
-        Long num=credentialRepository.count();
-        //CredentialsAuthority credentialsAuthority=new CredentialsAuthority(num+1,authority_id);
-        List<Authority> authorities=new ArrayList<Authority>();
-        authorities.add(new Authority(authority_id,"ROLE_DEPART"));
-
-        Credentials credentials=new Credentials(num+1,0,name,password_real,"DEPART",authorities,true);
-        String sql_credential="INSERT INTO credentials  VALUES("+(num+1)+",b\'1\',\'"+name+"\',\'"+password_real+"\',\'DEPART\',\'0\')";
-        String sql_credential_authority="INSERT INTO credentials_authorities  VALUES("+(num+1)+",6)";
-        if(log.isDebugEnabled()){
-            log.debug(sql_credential);
-            log.debug(sql_credential_authority);
-            log.debug("in debug");
+        if (!get_authoruty(token).equals(ROLE_ADMIN))
+        {
+            return ResponseEntity.status(401).body("权限不足");
         }
-        log.info(sql_credential);
-        log.info(sql_credential_authority);
-        credentialRepository.saveAndFlush(credentials);
+        long authority_id=6;
 
-        return null;
+        if(jdbcUserDetails.addUser(name,password,"DEPART",authority_id))
+            return ResponseEntity.status(200).body("增加用户成功");
+        else
+            return ResponseEntity.status(500).body("服务器错误");
     }
+
+    @Transactional
+    @Modifying
+    @CacheEvict(cacheNames="secondlevels",allEntries = true)
+    @RequestMapping(value = "/user/update",method = RequestMethod.GET)
+    public ResponseEntity updateUser(@RequestParam(value = "name") String name, @RequestParam(value = "password") String password, @RequestParam(value = "token") String token)
+    {
+        if (!get_authoruty(token).equals(ROLE_ADMIN))
+        {
+            return ResponseEntity.status(401).body("权限不足");
+        }
+        //jdbcUserDetails= new JdbcUserDetails();
+        if(jdbcUserDetails.updateUserPassword(name,password))
+            return ResponseEntity.status(200).body("更改密码成功") ;
+        else
+            return ResponseEntity.status(500).body("服务器错误");
+    }
+
+    public String get_authoruty(String token){
+        TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
+        OAuth2Authentication oAuth2Authentication = tokenStore.readAuthentication(token);
+        oAuth2Authentication.getPrincipal();
+        User user= (User)oAuth2Authentication.getPrincipal();
+        Credentials credentials=credentialRepository.findByName(user.getUsername());
+        String  authority=credentials.getAuthorities().get(0).getAuthority();
+        log.info(authority);
+        return authority;
+    }
+
 }

@@ -2,7 +2,7 @@ package com.aak.api;
 
 import com.aak.configuration.AuthorityPropertyEditor;
 import com.aak.configuration.SplitCollectionEditor;
-import com.aak.utils.Utils;
+import com.aak.utils.MyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
@@ -68,11 +68,11 @@ public class ClientsController {
             @ModelAttribute BaseClientDetails clientDetails,
             @RequestParam(value = "newClient", required = false) String newClient) {
         if (newClient == null) {
-            String pwdEncode = Utils.passwordEncoder(clientDetails.getClientSecret());
+            String pwdEncode = MyUtils.passwordEncoder(clientDetails.getClientSecret());
             clientDetails.setClientSecret(pwdEncode);
             clientsDetailsService.updateClientDetails(clientDetails);
         } else {
-            String pwdEncode = Utils.passwordEncoder(clientDetails.getClientSecret());
+            String pwdEncode = MyUtils.passwordEncoder(clientDetails.getClientSecret());
             clientDetails.setClientSecret(pwdEncode);
             clientsDetailsService.addClientDetails(clientDetails);
         }

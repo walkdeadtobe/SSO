@@ -5,15 +5,9 @@ import com.aak.repository.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.ClientDetails;
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
-
-import javax.sql.DataSource;
 
 /**
  * Implemention of ClientDetailsService for retrieval of  Client information
@@ -28,8 +22,6 @@ public class JdbcClientDetails implements ClientDetailsService
     @Autowired
     private ClientDetailRepository clientDetailRepository;
 
-    @Autowired
-    private DataSource dataSource;
 
     @Override
     public ClientDetails loadClientByClientId (String username) throws UsernameNotFoundException {
