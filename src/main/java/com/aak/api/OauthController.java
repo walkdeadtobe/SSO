@@ -41,8 +41,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 @RestController
 public class OauthController {
     public static Log log= LogFactory.getLog(OauthController.class);
+
+    private  static String  ROLE_ADMIN="ROLE_ADMIN";
+
     @Autowired
-    CredentialRepository credentialRepositoryy;
+    CredentialRepository credentialRepository;
 
     @Autowired
     Account_LogRepository account_logRepository;
@@ -73,7 +76,7 @@ public class OauthController {
         oAuth2Authentication = tokenStore.readAuthentication(token);
 
         User user= (User)oAuth2Authentication.getPrincipal();
-        Credentials credentials=credentialRepositoryy.findByName(user.getUsername());
+        Credentials credentials=credentialRepository.findByName(user.getUsername());
         Collection<GrantedAuthority> authorities=user.getAuthorities();
         Authority authority=(Authority)authorities.iterator().next();
 
@@ -131,7 +134,11 @@ public class OauthController {
 
     }
     @RequestMapping(value = "/log/account", method = RequestMethod.GET)
-    public String get_account_log(@RequestParam(value = "name") String name) {
+    public String get_account_log(@RequestParam(value = "name") String name, @RequestParam(value = "token") String token) {
+        if (!get_authoruty(token).equals(ROLE_ADMIN))
+        {
+            return ResponseEntity.status(401).body("权限不足").toString();
+        }
         List<Account_Log> list_account = account_logRepository.findAccount_LogsByUsername(name);
         Iterator<Account_Log> iterator = list_account.iterator();
         System.out.println(list_account.size());
@@ -168,7 +175,6 @@ public class OauthController {
         } catch (JSONException e) {
             log.info(e.toString());
         }
-
         return object.toString();
     }
 
@@ -282,22 +288,7 @@ public class OauthController {
         return null;
     }
 
-    public void create_token(String user_name,String clientId){
-        List<Authority> authorities=new ArrayList<>();
-        Authority authority=new Authority();
-        authority.setId(new Long(1));
-        authority.setAuthority("6");
-        authorities.add(authority);
 
-        User user = new User(user_name,user_name,authorities);
-        Authentication  authentication=new UsernamePasswordAuthenticationToken(user,null);
-
-        ClientDetails clientDetails = jdbcClientDetailsService.loadClientByClientId(clientId);
-        TokenRequest tokenRequest=new TokenRequest(MapUtils.EMPTY_SORTED_MAP,clientId,clientDetails.getScope(),clientDetails.getAuthorizedGrantTypes().toString());
-        OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
-        OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
-        authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
-    }
 
     /**
      * 两个版本并行存在，因而要做一些判断
@@ -363,5 +354,34 @@ public class OauthController {
         }finally {
 
         }
+    }
+
+
+    public void create_token(String user_name,String clientId){
+        List<Authority> authorities=new ArrayList<>();
+        Authority authority=new Authority();
+        authority.setId(new Long(1));
+        authority.setAuthority("6");
+        authorities.add(authority);
+
+        User user = new User(user_name,user_name,authorities);
+        Authentication  authentication=new UsernamePasswordAuthenticationToken(user,null);
+
+        ClientDetails clientDetails = jdbcClientDetailsService.loadClientByClientId(clientId);
+        TokenRequest tokenRequest=new TokenRequest(MapUtils.EMPTY_SORTED_MAP,clientId,clientDetails.getScope(),clientDetails.getAuthorizedGrantTypes().toString());
+        OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
+        OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
+        authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
+    }
+
+    public String get_authoruty(String token){
+        TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
+        OAuth2Authentication oAuth2Authentication = tokenStore.readAuthentication(token);
+        oAuth2Authentication.getPrincipal();
+        User user= (User)oAuth2Authentication.getPrincipal();
+        Credentials credentials=credentialRepository.findByName(user.getUsername());
+        String  authority=credentials.getAuthorities().get(0).getAuthority();
+        log.info(authority);
+        return authority;
     }
 }

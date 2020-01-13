@@ -76,6 +76,19 @@ public class UsersController {
             return ResponseEntity.status(500).body("服务器错误");
     }
 
+    @RequestMapping(value = "/user/delete",method = RequestMethod.GET)
+    public ResponseEntity  addUser(@RequestParam(value = "name") String name, @RequestParam(value = "token") String token )
+    {
+        if (!get_authoruty(token).equals(ROLE_ADMIN))
+        {
+            return ResponseEntity.status(401).body("权限不足");
+        }
+        if(jdbcUserDetails.deleteUser(name))
+            return ResponseEntity.status(200).body("删除用户成功");
+        else
+            return ResponseEntity.status(500).body("服务器错误");
+    }
+
     @Transactional
     @Modifying
     @CacheEvict(cacheNames="secondlevels",allEntries = true)

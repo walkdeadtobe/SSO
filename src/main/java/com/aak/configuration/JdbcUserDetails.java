@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.apache.commons.logging.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,10 +85,10 @@ public class JdbcUserDetails implements UserDetailsService{
             authorities.add(new Authority(authority_id,authority));
 
             Credentials credentials=new Credentials(num+1,0,username,password_real,department,authorities,true);
-            String sql_credential="INSERT INTO credentials  VALUES("+(num+1)+",b\'1\',\'"+username+"\',\'"+password_real+"\',\'DEPART\',\'0\')";
-            String sql_credential_authority="INSERT INTO credentials_authorities  VALUES("+(num+1)+",6)";
-            log.info(sql_credential);
-            log.info(sql_credential_authority);
+            //String sql_credential="INSERT INTO credentials  VALUES("+(num+1)+",b\'1\',\'"+username+"\',\'"+password_real+"\',\'DEPART\',\'0\')";
+            //String sql_credential_authority="INSERT INTO credentials_authorities  VALUES("+(num+1)+",6)";
+            //log.info(sql_credential);
+            //log.info(sql_credential_authority);
             credentialRepository.saveAndFlush(credentials);
             return true;
         }catch(Exception e){
@@ -96,6 +97,16 @@ public class JdbcUserDetails implements UserDetailsService{
         }
     }
 
+
+    public boolean deleteUser(String username){
+        try {
+            credentialRepository.deleteCredentialsByName(username);
+            return true;
+        }catch(Exception e){
+            log.error(e.toString());
+            return false;
+        }
+    }
 
     public boolean updateUserPassword(String username,String password){
         try {
