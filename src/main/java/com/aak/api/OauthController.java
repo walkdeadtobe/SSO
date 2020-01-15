@@ -2,7 +2,9 @@ package com.aak.api;
 
 import com.aak.configuration.IpConfiguration;
 import com.aak.configuration.JdbcUserDetails;
-import com.aak.domain.*;
+import com.aak.domain.Account_Log;
+import com.aak.domain.Authority;
+import com.aak.domain.Credentials;
 import com.aak.repository.Account_LogRepository;
 import com.aak.repository.CredentialRepository;
 import com.aak.utils.AES;
@@ -10,15 +12,18 @@ import com.aak.utils.ApplicationSupport;
 import com.aak.utils.MyUtils;
 import com.aak.utils.SynUtil;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -28,21 +33,17 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.userdetails.User;
-import org.apache.commons.logging.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
-import org.springframework.data.redis.core.StringRedisTemplate;
-
 @RestController
 public class OauthController {
-    public static Log log= LogFactory.getLog(OauthController.class);
+    public static Log log = LogFactory.getLog(OauthController.class);
 
-    private  static String  ROLE_ADMIN="ROLE_ADMIN";
+    private static String ROLE_ADMIN = "ROLE_ADMIN";
 
     @Autowired
     CredentialRepository credentialRepository;
@@ -67,29 +68,30 @@ public class OauthController {
 
     @SuppressWarnings("unchecked")
     @RequestMapping("/oauth/check_token")
-    public String check_token(@RequestParam(value = "token") String token){
-        try{
-        TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
-        OAuth2AccessToken oAuth2AccessToken=tokenStore.readAccessToken(token);
-        OAuth2Authentication oAuth2Authentication;
+    public String check_token(@RequestParam(value = "token") String token) {
+        try {
+            TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
+            OAuth2AccessToken oAuth2AccessToken = tokenStore.readAccessToken(token);
+            OAuth2Authentication oAuth2Authentication;
 
-        oAuth2Authentication = tokenStore.readAuthentication(token);
+            oAuth2Authentication = tokenStore.readAuthentication(token);
 
-        User user= (User)oAuth2Authentication.getPrincipal();
-        Credentials credentials=credentialRepository.findByName(user.getUsername());
-        Collection<GrantedAuthority> authorities=user.getAuthorities();
-        Authority authority=(Authority)authorities.iterator().next();
+            User user = (User) oAuth2Authentication.getPrincipal();
+            Credentials credentials = credentialRepository.findByName(user.getUsername());
+            Collection<GrantedAuthority> authorities = user.getAuthorities();
+            Authority authority = (Authority) authorities.iterator().next();
 
-        return "{\"status\":200,\"resource_id\":\""+oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next()+"\",\"scope\":\""+oAuth2AccessToken.getScope().iterator().next()+"\",\"department\":\""+credentials.getDepartment()+"\",\"Authorities\":\""+authority.getAuthority()+"\",\"PERSON_ID\":\""+user.getUsername()+"\"}";
+            return "{\"status\":200,\"resource_id\":\"" + oAuth2Authentication.getOAuth2Request().getResourceIds().iterator().next() + "\",\"scope\":\"" + oAuth2AccessToken.getScope().iterator().next() + "\",\"department\":\"" + credentials.getDepartment() + "\",\"Authorities\":\"" + authority.getAuthority() + "\",\"PERSON_ID\":\"" + user.getUsername() + "\"}";
 
-        }catch (Exception e){
+        } catch (Exception e) {
             log.info(e.toString());
         }
         return "{\"status\":500,\"error\":\"Internal Server Error\",\"message\": \"token expired\"}";
 
     }
-    @RequestMapping(value="/oauth/getAuth",method= RequestMethod.GET)
-    static OAuth2Authentication  getAuthenticationInOauth2Server(@RequestParam(value = "token") String token){
+
+    @RequestMapping(value = "/oauth/getAuth", method = RequestMethod.GET)
+    static OAuth2Authentication getAuthenticationInOauth2Server(@RequestParam(value = "token") String token) {
         TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
         OAuth2Authentication oAuth2Authentication = tokenStore.readAuthentication(token);
         log.info(oAuth2Authentication.toString());
@@ -101,42 +103,90 @@ public class OauthController {
     /**
      * 按照 oauth2 的登陆验证流程，验证 用户名 和 密码 正确之后，会直接跳转回之前约定的网址，在此过程，我们添加一一些自己的东西
      * 所以 之前约定为 本地的网址，即/oauth/code ，之后可以在本函数中添加相关处理，并执行后续的流程
+     *
      * @param request
      * @param response
      */
-    @RequestMapping(value="/oauth/code",method= RequestMethod.GET)
-    static void  middle(HttpServletRequest request, HttpServletResponse response){
+    @RequestMapping(value = "/oauth/code", method = RequestMethod.GET)
+    static void middle(HttpServletRequest request, HttpServletResponse response) {
         Object s1 = request.getSession().getAttribute("refer");
         try {
-            response.sendRedirect(request.getParameter("back_to")+"?code="+request.getParameter("code")+"&refer="+request.getSession().getAttribute("refer"));
-        }catch (Exception e){
+            response.sendRedirect(request.getParameter("back_to") + "?code=" + request.getParameter("code") + "&refer=" + request.getSession().getAttribute("refer"));
+        } catch (Exception e) {
             System.out.println(e.toString());
         }
 
     }
 
     //public void   logout(HttpServletRequest request, HttpServletResponse response){
-    @RequestMapping(value="/oauth/revoke_token",method= RequestMethod.GET)
-    public ResponseEntity   logout(@RequestParam(value = "token") String token){
-       try {
-           //String token=request.getHeader("token");
-           TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
-           OAuth2AccessToken accessToken = tokenStore.readAccessToken(token);
-           tokenStore.removeAccessToken(accessToken);
-           log.info("remove ok");
-           return ResponseEntity.ok().build();
-       }catch(Exception e){
-           System.out.println(e);
-           log.info("remove failure");
-           return ResponseEntity.status(400).header("error",e.toString()).build();
-       }
+    @RequestMapping(value = "/oauth/revoke_token", method = RequestMethod.GET)
+    public ResponseEntity logout(@RequestParam(value = "token") String token) {
+        try {
+            //String token=request.getHeader("token");
+            TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
+            OAuth2AccessToken accessToken = tokenStore.readAccessToken(token);
+            tokenStore.removeAccessToken(accessToken);
+            log.info("remove ok");
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.out.println(e);
+            log.info("remove failure");
+            return ResponseEntity.status(400).header("error", e.toString()).build();
+        }
 
 
     }
+
+    /* 获取一段时间内的全部用户的登陆登出记录
+     * start: 开始时间戳
+     * end： 结束时间戳
+     * @return：[
+     *      {
+     *          action:
+     *          time:
+     *          user:
+     *          system:
+     *       },
+     *      ...
+     * ]
+     * */
     @RequestMapping(value = "/log/account", method = RequestMethod.GET)
+    public String get_account_log(@RequestParam(value = "start") long start, @RequestParam(value = "end") long end, @RequestParam(value = "token") String token) {
+        if (!get_authoruty(token).equals(ROLE_ADMIN)) {
+            return ResponseEntity.status(401).body("权限不足").toString();
+        }
+        String s = Account_Log.DateFormat.format(new Date(start * 1000));
+        String e = Account_Log.DateFormat.format(new Date(end * 1000));
+
+        List<Account_Log> list_account = account_logRepository.findAccount_LogsByTimestampRange(s, e);
+        System.out.println("list_account.size()" + list_account.size());
+
+        ArrayList<JSONObject> records = new ArrayList<JSONObject>();
+        try {
+            if (!list_account.isEmpty()) {
+                Account_Log last_item = list_account.get(0);
+                for (int i = 1; i < list_account.size(); i++) {
+                    Account_Log curr = list_account.get(i);
+                    JSONObject t = new JSONObject();
+                    t.put("action", curr.getType());
+                    t.put("time", curr.getTimestamp());
+                    t.put("user", curr.getUsernanme());
+                    t.put("system", curr.getSystem());
+
+                    records.add(t);
+                }
+            }
+        } catch (JSONException exp) {
+            log.info(exp.toString());
+        }
+        return new JSONArray(records).toString();
+
+    }
+
+
+    @RequestMapping(value = "/log/account_by_name", method = RequestMethod.GET)
     public String get_account_log(@RequestParam(value = "name") String name, @RequestParam(value = "token") String token) {
-        if (!get_authoruty(token).equals(ROLE_ADMIN))
-        {
+        if (!get_authoruty(token).equals(ROLE_ADMIN)) {
             return ResponseEntity.status(401).body("权限不足").toString();
         }
         List<Account_Log> list_account = account_logRepository.findAccount_LogsByUsername(name);
@@ -179,208 +229,208 @@ public class OauthController {
     }
 
 
-    @RequestMapping(value="/outside/check_uuid",method= RequestMethod.GET)
-    public ResponseEntity   check_uuid_v1(@RequestParam(value = "uuid") String uuid){
-        if(stringRedisTemplate.opsForValue().get(uuid)!=null){
+    @RequestMapping(value = "/outside/check_uuid", method = RequestMethod.GET)
+    public ResponseEntity check_uuid_v1(@RequestParam(value = "uuid") String uuid) {
+        if (stringRedisTemplate.opsForValue().get(uuid) != null) {
             return ResponseEntity.ok().build();
-        }else{
+        } else {
             return ResponseEntity.status(400).build();
         }
     }
 
-    @RequestMapping(value="/outside/authenticate",method= RequestMethod.POST)
-    public ResponseEntity   check_uuid(@RequestBody String json){
-        String AppKey="123";///"de1a98dcf5a32ff7fddfbcfb795c518a";
+    @RequestMapping(value = "/outside/authenticate", method = RequestMethod.POST)
+    public ResponseEntity check_uuid(@RequestBody String json) {
+        String AppKey = "123";///"de1a98dcf5a32ff7fddfbcfb795c518a";
         JSONObject app;
         try {
             app = new JSONObject(json);
-            String AppSecret = SynUtil.AESDecode(AppKey,app.getString("appSecret"));
-            String AuthCode = SynUtil.AESDecode(AppKey,app.getString("authCode"));
-            log.info(AuthCode+" "+AppSecret);
-        }catch(Exception e){
+            String AppSecret = SynUtil.AESDecode(AppKey, app.getString("appSecret"));
+            String AuthCode = SynUtil.AESDecode(AppKey, app.getString("authCode"));
+            log.info(AuthCode + " " + AppSecret);
+        } catch (Exception e) {
             log.info(e.toString());
             return ResponseEntity.status(500).body("{\"resultCode\":0,\"resultMessage\":\"格式错误\"}");
         }
-        try{
+        try {
             JSONObject back = new JSONObject();
-            back.put("resultCode",1);
-            back.put("resultMessage","验证正确");
+            back.put("resultCode", 1);
+            back.put("resultMessage", "验证正确");
             return ResponseEntity.status(200).body(back.toString(1));
-        }catch(JSONException e){
+        } catch (JSONException e) {
             log.info(e.toString());
             return ResponseEntity.status(500).body("系统错误");
         }
 
     }
 
-    @RequestMapping(value="/outside/uuid",method= RequestMethod.GET)
-    public String   make_uuid(@RequestParam(value = "system") String system,@RequestParam(value = "appId") String appId){
-        String url="http://111.203.146.69/kxyj/qcodelogin?appName=talent&appID="+appId;
-        if(ipConfiguration.getPort()==80)
-            url="http://111.203.146.69/kxyj/qcodelogin?appName=talent&appID="+appId;
+    @RequestMapping(value = "/outside/uuid", method = RequestMethod.GET)
+    public String make_uuid(@RequestParam(value = "system") String system, @RequestParam(value = "appId") String appId) {
+        String url = "http://111.203.146.69/kxyj/qcodelogin?appName=talent&appID=" + appId;
+        if (ipConfiguration.getPort() == 80)
+            url = "http://111.203.146.69/kxyj/qcodelogin?appName=talent&appID=" + appId;
         else
-            url="http://sso-smart.cast.org.cn:8080/kxyj/qcodelogin?appName=talent&appID="+appId;
-        String uuid= UUID.randomUUID().toString();
+            url = "http://sso-smart.cast.org.cn:8080/kxyj/qcodelogin?appName=talent&appID=" + appId;
+        String uuid = UUID.randomUUID().toString();
         log.info(uuid);
-        try{
-            if(appId.equals("kexieyijia")){
-                String uuid_value="{\"state\":\"0\"}";
-                stringRedisTemplate.opsForValue().set(uuid,uuid_value);
-                url+="&authCode="+uuid+"&token="+uuid;
-                JSONObject jsonObject=new JSONObject();
-                jsonObject.put("url",url);
-                jsonObject.put("uuid",uuid);
-                url=jsonObject.toString();
-            }else{
+        try {
+            if (appId.equals("kexieyijia")) {
+                String uuid_value = "{\"state\":\"0\"}";
+                stringRedisTemplate.opsForValue().set(uuid, uuid_value);
+                url += "&authCode=" + uuid + "&token=" + uuid;
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("url", url);
+                jsonObject.put("uuid", uuid);
+                url = jsonObject.toString();
+            } else {
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             log.info(e.toString());
             return null;
         }
         return url;
     }
 
-    @RequestMapping(value="/outside/confirm_information",method= RequestMethod.GET)
-    public String   confirm_login(HttpServletRequest request,@RequestParam(value = "uuid") String uuid){
-        String uuid_value,username;
+    @RequestMapping(value = "/outside/confirm_information", method = RequestMethod.GET)
+    public String confirm_login(HttpServletRequest request, @RequestParam(value = "uuid") String uuid) {
+        String uuid_value, username;
         JSONObject jsonObject;
         MyUtils myUtils = new MyUtils();
-        Cookie[] cookies=request.getCookies();
-        if(stringRedisTemplate.hasKey(uuid)){
-            try{
-                log.info("hasuuid:"+uuid);
-                uuid_value=stringRedisTemplate.opsForValue().get(uuid);
-               if( new JSONObject(uuid_value).get("state").equals("0")){
-                   return null;
-               }
+        Cookie[] cookies = request.getCookies();
+        if (stringRedisTemplate.hasKey(uuid)) {
+            try {
+                log.info("hasuuid:" + uuid);
+                uuid_value = stringRedisTemplate.opsForValue().get(uuid);
+                if (new JSONObject(uuid_value).get("state").equals("0")) {
+                    return null;
+                }
                 //stringRedisTemplate.opsForValue().get(uuid);
-                jsonObject=new JSONObject(uuid_value);
-                username=jsonObject.get("username").toString();
-            }catch (Exception e){
+                jsonObject = new JSONObject(uuid_value);
+                username = jsonObject.get("username").toString();
+            } catch (Exception e) {
                 log.info(e.toString());
                 return null;
             }
 
             TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
-            Collection<OAuth2AccessToken> C_token=tokenStore.findTokensByClientIdAndUserName("kexieyijia",username);
-            log.info("size="+C_token.size()+";username="+username);
-            if(C_token!=null && C_token.size()>0) {
+            Collection<OAuth2AccessToken> C_token = tokenStore.findTokensByClientIdAndUserName("kexieyijia", username);
+            log.info("size=" + C_token.size() + ";username=" + username);
+            if (C_token != null && C_token.size() > 0) {
                 Iterator<OAuth2AccessToken> iterator = C_token.iterator();
                 String token = iterator.next().toString();
-                String from=null;
+                String from = null;
                 String url;///="http://210.14.118.96/ep/cookie.html";
 
                 JSONObject jsonObject1 = myUtils.cookie_2_json(cookies);
-                if(jsonObject1.has("from")){
-                    try{
+                if (jsonObject1.has("from")) {
+                    try {
                         from = jsonObject1.getString("from");
-                    }catch(JSONException e){
+                    } catch (JSONException e) {
                         log.error(e.toString());
                     }
                 }
                 url = myUtils.get_redirect(from);
-                return url+"?token="+token;
+                return url + "?token=" + token;
             }
-        }else{
+        } else {
 
         }
         return null;
     }
 
 
-
     /**
      * 两个版本并行存在，因而要做一些判断
      * 版本v1:参数token，ticket
      * 版本v2:参数json
+     *
      * @param token
      * @param ticket
      * @param json
      * @return
      */
-    @RequestMapping(value="/outside/information",method= RequestMethod.POST)
-    public ResponseEntity   get_information(@RequestParam(value ="token" ,required = false)String token,@RequestParam(value ="ticket" ,required = false)String ticket,@RequestBody(required = false) String json){
+    @RequestMapping(value = "/outside/information", method = RequestMethod.POST)
+    public ResponseEntity get_information(@RequestParam(value = "token", required = false) String token, @RequestParam(value = "ticket", required = false) String ticket, @RequestBody(required = false) String json) {
         try {
-            String AppKey="de1a98dcf5a32ff7fddfbcfb795c518a";
-            String user_name="username";
-            String uuid=null;
-            if(token != null){
-                uuid=token;
-                AES aes=new AES("");
-                if(aes.Decrypt_now(ticket)!=null) {
-                    user_name="kexieyijia_" + aes.Decrypt_now(ticket);
+            String AppKey = "de1a98dcf5a32ff7fddfbcfb795c518a";
+            String user_name = "username";
+            String uuid = null;
+            if (token != null) {
+                uuid = token;
+                AES aes = new AES("");
+                if (aes.Decrypt_now(ticket) != null) {
+                    user_name = "kexieyijia_" + aes.Decrypt_now(ticket);
                 }
-                String uuid_value=stringRedisTemplate.opsForValue().get(uuid);
-                JSONObject jsonObject=new JSONObject(uuid_value);
-                if(jsonObject != null){
-                    log.info("jsonObject_username:"+user_name);
-                    jsonObject.put("username",user_name);
-                    jsonObject.put("state","1");
+                String uuid_value = stringRedisTemplate.opsForValue().get(uuid);
+                JSONObject jsonObject = new JSONObject(uuid_value);
+                if (jsonObject != null) {
+                    log.info("jsonObject_username:" + user_name);
+                    jsonObject.put("username", user_name);
+                    jsonObject.put("state", "1");
                 }
-                stringRedisTemplate.opsForValue().set(uuid,jsonObject.toString());
-            }else {
+                stringRedisTemplate.opsForValue().set(uuid, jsonObject.toString());
+            } else {
                 SynUtil synUtil = new SynUtil();
                 JSONObject json1 = new JSONObject(json);
-                String authCode=json1.getString("authCode");
-                String information1=json1.getString("information");
+                String authCode = json1.getString("authCode");
+                String information1 = json1.getString("information");
                 uuid = authCode;
                 JSONObject information = new JSONObject(information1);
                 String uuid_value = stringRedisTemplate.opsForValue().get(uuid);
                 JSONObject jsonObject = new JSONObject(uuid_value);
                 if (jsonObject != null) {
-                    user_name = synUtil.AESDecode(AppKey,information.getString("name"));
-                    String duty = synUtil.AESDecode(AppKey,information.getString("position"));
-                    user_name = "kexieyijia_" +  user_name ;
+                    user_name = synUtil.AESDecode(AppKey, information.getString("name"));
+                    String duty = synUtil.AESDecode(AppKey, information.getString("position"));
+                    user_name = "kexieyijia_" + user_name;
                     jsonObject.put("username", user_name);
                     jsonObject.put("state", "1");
                 }
-                stringRedisTemplate.opsForValue().set(uuid,jsonObject.toString());
+                stringRedisTemplate.opsForValue().set(uuid, jsonObject.toString());
             }
 
-            if(jdbcUserDetails.loadUserByUsername(user_name)==null)
-                jdbcUserDetails.addUser(user_name,user_name,"DEPART",6);
-            create_token(user_name,"kexieyijia");
+            if (jdbcUserDetails.loadUserByUsername(user_name) == null)
+                jdbcUserDetails.addUser(user_name, user_name, "DEPART", 6);
+            create_token(user_name, "kexieyijia");
 
             return ResponseEntity.ok().build();
 
-        }catch(JSONException e){
+        } catch (JSONException e) {
             log.info(e.toString());
             return ResponseEntity.status(500).body("{\"resultCode\":0,\"resultMessage\":\"格式错误\"}");
-        }catch(Exception e){
+        } catch (Exception e) {
             log.info(e.toString());
             return ResponseEntity.status(400).build();
 
-        }finally {
+        } finally {
 
         }
     }
 
 
-    public void create_token(String user_name,String clientId){
-        List<Authority> authorities=new ArrayList<>();
-        Authority authority=new Authority();
+    public void create_token(String user_name, String clientId) {
+        List<Authority> authorities = new ArrayList<>();
+        Authority authority = new Authority();
         authority.setId(new Long(1));
         authority.setAuthority("6");
         authorities.add(authority);
 
-        User user = new User(user_name,user_name,authorities);
-        Authentication  authentication=new UsernamePasswordAuthenticationToken(user,null);
+        User user = new User(user_name, user_name, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null);
 
         ClientDetails clientDetails = jdbcClientDetailsService.loadClientByClientId(clientId);
-        TokenRequest tokenRequest=new TokenRequest(MapUtils.EMPTY_SORTED_MAP,clientId,clientDetails.getScope(),clientDetails.getAuthorizedGrantTypes().toString());
+        TokenRequest tokenRequest = new TokenRequest(MapUtils.EMPTY_SORTED_MAP, clientId, clientDetails.getScope(), clientDetails.getAuthorizedGrantTypes().toString());
         OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
         authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
     }
 
-    public String get_authoruty(String token){
+    public String get_authoruty(String token) {
         TokenStore tokenStore = (TokenStore) ApplicationSupport.getBean("tokenStore");
         OAuth2Authentication oAuth2Authentication = tokenStore.readAuthentication(token);
         oAuth2Authentication.getPrincipal();
-        User user= (User)oAuth2Authentication.getPrincipal();
-        Credentials credentials=credentialRepository.findByName(user.getUsername());
-        String  authority=credentials.getAuthorities().get(0).getAuthority();
+        User user = (User) oAuth2Authentication.getPrincipal();
+        Credentials credentials = credentialRepository.findByName(user.getUsername());
+        String authority = credentials.getAuthorities().get(0).getAuthority();
         log.info(authority);
         return authority;
     }

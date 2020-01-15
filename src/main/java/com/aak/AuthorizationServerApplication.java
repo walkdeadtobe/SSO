@@ -4,7 +4,6 @@ import com.aak.api.OauthController;
 import com.aak.configuration.IpConfiguration;
 import com.aak.utils.MyUtils;
 import com.zaxxer.hikari.HikariDataSource;
-import org.omg.CORBA.BAD_CONTEXT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
